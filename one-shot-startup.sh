@@ -31,6 +31,8 @@ echo "[startup] starting uvicorn app.satti_api:app on ${HOST}:${PORT}"
 nohup "$ROOT_DIR/venv/bin/uvicorn" app.satti_api:app \
   --host "$HOST" \
   --port "$PORT" \
+  --reload \
+  --reload-dir app \
   >"$LOG_FILE" 2>&1 &
 
 NEW_PID=$!
