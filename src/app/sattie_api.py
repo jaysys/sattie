@@ -9,16 +9,18 @@ Run:
 from __future__ import annotations
 
 import html
+import os
 import re
 import unicodedata
 from urllib.parse import quote
 
-from fastapi import FastAPI, HTTPException, Path as ApiPath, Query
+from fastapi import FastAPI, HTTPException, Path as ApiPath, Query, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import app.core as core_module
+from app.doc_service import DocumentService
 from app.md_viwer import render_guide_page
 from app.core import *  # noqa: F403
 
@@ -61,6 +63,7 @@ app = FastAPI(
         },
         {"name": "ui", "description": "브라우저용 관리/탐색 UI API"},
         {"name": "guide", "description": "guide 폴더의 Markdown 문서를 HTML로 탐색/렌더링하는 API"},
+        {"name": "docs-hub", "description": "문서 허브, 문서 상세, 업로드, 운영자 문서 관리 API"},
     ],
 )
 app.mount("/ui/static", StaticFiles(directory=str(UI_HTML_PATH.parent), html=False), name="ui-static")
@@ -71,6 +74,7 @@ OSM_SIM_SOURCE: dict[str, dict] = {}
 core_module.OSM_SIM_CATALOG = OSM_SIM_CATALOG
 core_module.OSM_SIM_SOURCE = OSM_SIM_SOURCE
 GUIDE_DIR = PROJECT_DIR / "guide"
+DOC_SERVICE = DocumentService(PROJECT_DIR)
 
 
 class GuideUploadPayload(BaseModel):
@@ -81,7 +85,7 @@ class GuideUploadPayload(BaseModel):
 @app.middleware("http")
 async def add_no_cache_headers(request, call_next):
     response = await call_next(request)
-    if request.url.path in {"/", "/ui", "/docs", "/redoc", "/openapi.json", "/guide"}:
+    if request.url.path in {"/", "/hub", "/upload", "/admin/docs", "/ui", "/docs", "/redoc", "/openapi.json", "/guide"}:
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
@@ -93,6 +97,32 @@ def startup_event() -> None:
     global CATALOG
     CATALOG = _load_catalog()
     _ensure_osm_catalog_loaded()
+    DOC_SERVICE.reindex()
+
+
+def _is_local_client(request: Request) -> bool:
+    client_host = (request.client.host if request.client else "") or ""
+    return client_host in {"127.0.0.1", "::1", "localhost"}
+
+
+def _require_docs_admin(request: Request) -> None:
+    token = os.getenv("DOCS_ADMIN_TOKEN", "").strip()
+    if token:
+        supplied = request.headers.get("x-docs-admin-token", "").strip()
+        if supplied != token:
+            raise HTTPException(status_code=403, detail={"ok": False, "error_code": "FORBIDDEN", "message": "Admin token required"})
+        return
+    if not _is_local_client(request):
+        raise HTTPException(status_code=403, detail={"ok": False, "error_code": "FORBIDDEN", "message": "Admin route is restricted to local access"})
+
+
+def _docs_json_response(action):
+    try:
+        return action()
+    except HTTPException as exc:
+        if isinstance(exc.detail, dict):
+            return JSONResponse(content=exc.detail, status_code=exc.status_code)
+        raise
 
 
 def _guide_markdown_files() -> list[Path]:
@@ -113,7 +143,7 @@ def _guide_markdown_files() -> list[Path]:
 
 
 def _sanitize_md_filename(name: str) -> str:
-    base = Path(name).name.strip()
+    base = unicodedata.normalize("NFC", Path(name).name).strip()
     if not base:
         raise HTTPException(status_code=400, detail="Filename is empty")
     if not base.lower().endswith(".md"):
@@ -1057,6 +1087,174 @@ def delete_mock_store() -> dict:
 
 
 @app.get(
+    "/hub",
+    response_class=HTMLResponse,
+    tags=["docs-hub"],
+    summary="문서 허브",
+    description="문서 허브 메인 화면을 반환합니다.",
+)
+def docs_hub(
+    category: Optional[str] = Query(default=None, description="카테고리 필터"),
+    tag: Optional[str] = Query(default=None, description="태그 필터"),
+    sort: str = Query(default="latest", description="latest | popular | title"),
+    q: str = Query(default="", description="검색어"),
+) -> str:
+    return DOC_SERVICE.render_hub_page(category=category, tag=tag, sort=sort, q=q)
+
+
+@app.get(
+    "/hub/category/{category}",
+    response_class=HTMLResponse,
+    tags=["docs-hub"],
+    summary="카테고리별 문서 허브",
+    description="카테고리별 문서 허브 화면을 반환합니다.",
+)
+def docs_hub_by_category(
+    category: str,
+    tag: Optional[str] = Query(default=None, description="태그 필터"),
+    sort: str = Query(default="latest", description="latest | popular | title"),
+    q: str = Query(default="", description="검색어"),
+) -> str:
+    return DOC_SERVICE.render_hub_page(category=category, tag=tag, sort=sort, q=q)
+
+
+@app.get(
+    "/p/{slug}",
+    response_class=HTMLResponse,
+    tags=["docs-hub"],
+    summary="문서 상세 페이지",
+    description="문서 상세 HTML 화면을 반환합니다.",
+)
+def docs_detail_page(slug: str) -> str:
+    return DOC_SERVICE.render_detail_page(slug)
+
+
+@app.get(
+    "/upload",
+    response_class=HTMLResponse,
+    tags=["docs-hub"],
+    summary="문서 업로드 페이지",
+    description="Markdown 업로드 화면을 반환합니다.",
+)
+def docs_upload_page() -> str:
+    return DOC_SERVICE.render_upload_page()
+
+
+@app.get(
+    "/admin/docs",
+    response_class=HTMLResponse,
+    tags=["docs-hub"],
+    summary="운영자 문서 관리 화면",
+    description="문서 인덱스 상태와 재색인 기능을 제공하는 운영자 화면입니다.",
+)
+def docs_admin_page(request: Request) -> str:
+    _require_docs_admin(request)
+    return DOC_SERVICE.render_admin_page()
+
+
+@app.get(
+    "/api/docs/list",
+    response_class=JSONResponse,
+    tags=["docs-hub"],
+    summary="문서 목록 조회",
+    description="문서 허브 목록을 조회합니다.",
+)
+def api_docs_list(
+    category: Optional[str] = Query(default=None),
+    tag: Optional[str] = Query(default=None),
+    sort: str = Query(default="latest"),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
+) -> dict:
+    return _docs_json_response(
+        lambda: DOC_SERVICE.list_documents(category=category, tag=tag, sort=sort, page=page, page_size=page_size)
+    )
+
+
+@app.get(
+    "/api/docs/search",
+    response_class=JSONResponse,
+    tags=["docs-hub"],
+    summary="문서 검색",
+    description="제목, 태그, 요약, headings, 본문 일부를 검색합니다.",
+)
+def api_docs_search(
+    q: str = Query(..., description="검색어"),
+    category: Optional[str] = Query(default=None),
+    tag: Optional[str] = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
+) -> dict:
+    return _docs_json_response(
+        lambda: DOC_SERVICE.search_documents(query=q, category=category, tag=tag, page=page, page_size=page_size)
+    )
+
+
+@app.get(
+    "/api/docs/{slug}",
+    response_class=JSONResponse,
+    tags=["docs-hub"],
+    summary="문서 상세 조회",
+    description="문서 메타데이터와 본문 HTML을 반환합니다.",
+)
+def api_docs_detail(slug: str) -> dict:
+    return _docs_json_response(lambda: DOC_SERVICE.get_document_detail(slug))
+
+
+@app.get(
+    "/api/docs/{slug}/raw",
+    response_class=Response,
+    tags=["docs-hub"],
+    summary="원본 Markdown 조회",
+    description="문서 원본 Markdown을 반환합니다.",
+)
+def api_docs_raw(slug: str) -> Response:
+    raw = DOC_SERVICE.get_document_raw(slug)
+    return Response(content=raw, media_type="text/markdown; charset=utf-8")
+
+
+@app.post(
+    "/api/docs/preview",
+    response_class=JSONResponse,
+    tags=["docs-hub"],
+    summary="문서 미리보기",
+    description="Markdown 본문을 서버 렌더링하여 업로드 전 HTML 미리보기를 반환합니다.",
+)
+async def api_docs_preview(payload: GuideUploadPayload) -> JSONResponse:
+    result = _docs_json_response(lambda: DOC_SERVICE.preview_document(filename=payload.filename, content=payload.content))
+    if isinstance(result, dict):
+        return JSONResponse(content=result)
+    return result
+
+
+@app.post(
+    "/api/docs/upload",
+    response_class=JSONResponse,
+    tags=["docs-hub"],
+    summary="문서 업로드",
+    description="Markdown 파일을 업로드하고 인덱스 반영을 시도합니다.",
+)
+async def api_docs_upload(payload: GuideUploadPayload) -> JSONResponse:
+    result = _docs_json_response(lambda: DOC_SERVICE.upload_document(filename=payload.filename, content=payload.content))
+    if isinstance(result, tuple):
+        status_code, payload = result
+        return JSONResponse(content=payload, status_code=status_code)
+    return result
+
+
+@app.post(
+    "/api/docs/reindex",
+    response_class=JSONResponse,
+    tags=["docs-hub"],
+    summary="문서 인덱스 재생성",
+    description="운영자용 전체 인덱스 재생성 API입니다.",
+)
+def api_docs_reindex(request: Request) -> dict:
+    _require_docs_admin(request)
+    return _docs_json_response(DOC_SERVICE.reindex)
+
+
+@app.get(
     "/guide",
     response_class=HTMLResponse,
     tags=["guide"],
@@ -1175,4 +1373,4 @@ def ui() -> str:
     response_description="HTML 문서",
 )
 def root() -> str:
-    return '<html><body style="font-family:sans-serif;padding:20px;"><h2>Sattie (Virtual Satellite Imagery Service) API</h2><p><a href="/ui">데모로 배워보는 위상영상 이미지포맷 L0~L4</a></p><p><a href="/guide">Guide 문서 보기</a></p><p><a href="/docs">Swagger Docs</a></p></body></html>'
+    return DOC_SERVICE.render_landing_page()

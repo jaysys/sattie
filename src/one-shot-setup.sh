@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
+SKIP_PIP_UPGRADE="${SKIP_PIP_UPGRADE:-1}"
 
 echo "[setup] project root: $ROOT_DIR"
 
@@ -17,8 +18,12 @@ fi
 
 source "$ROOT_DIR/venv/bin/activate"
 
-echo "[setup] upgrading pip/setuptools/wheel"
-python -m pip install --upgrade pip setuptools wheel
+if [[ "$SKIP_PIP_UPGRADE" == "1" ]]; then
+  echo "[setup] skipping pip/setuptools/wheel upgrade"
+else
+  echo "[setup] upgrading pip/setuptools/wheel"
+  python -m pip install --upgrade pip setuptools wheel
+fi
 
 if [[ -f "$ROOT_DIR/requirements.txt" ]]; then
   echo "[setup] installing requirements"

@@ -26,6 +26,24 @@ def render_markdown_html(md_text: str) -> str:
     in_ul = False
     in_ol = False
 
+    def looks_like_formula_block(text: str) -> bool:
+        sample = text.strip()
+        if not sample:
+            return False
+        markers = ("≈", "=", "tan(", "sin(", "cos(", "theta_", "d_", "h *", "km", "deg")
+        return any(marker in sample for marker in markers)
+
+    def convert_formula_text_to_tex(text: str) -> str:
+        tex = text.strip()
+        tex = re.sub(r"\btheta_([A-Za-z0-9]+)\b", r"\\theta_{\1}", tex)
+        tex = re.sub(r"\b([A-Za-z])_([A-Za-z0-9]+)\b", r"\1_{\2}", tex)
+        tex = re.sub(r"(?<=\d)°", r"^\\circ", tex)
+        tex = re.sub(r"\btan\(", r"\\tan(", tex)
+        tex = re.sub(r"\bsin\(", r"\\sin(", tex)
+        tex = re.sub(r"\bcos\(", r"\\cos(", tex)
+        tex = re.sub(r"\s\*\s", r" \\cdot ", tex)
+        return tex
+
     def close_lists() -> None:
         nonlocal in_ul, in_ol
         if in_ul:
@@ -124,6 +142,11 @@ def render_markdown_html(md_text: str) -> str:
                 out_parts.append(_render_plain_with_links(part))
         return "".join(out_parts)
 
+    def render_table_cell(text: str) -> str:
+        rendered = render_inline(text)
+        rendered = re.sub(r"&lt;br\s*/?&gt;", "<br>", rendered, flags=re.IGNORECASE)
+        return rendered
+
     def split_table_row(s: str) -> list[str]:
         t = s.strip()
         if t.startswith("|"):
@@ -178,6 +201,8 @@ def render_markdown_html(md_text: str) -> str:
                 code_text = "\n".join(code_lines)
                 if code_lang.lower() == "mermaid":
                     out.append("<pre class='mermaid'>" + html.escape(code_text) + "</pre>")
+                elif code_lang.lower() in {"text", "math", "formula"} and looks_like_formula_block(code_text):
+                    out.append("<div class='math-block'>$$\n" + html.escape(convert_formula_text_to_tex(code_text)) + "\n$$</div>")
                 else:
                     out.append("<pre><code>" + html.escape(code_text) + "</code></pre>")
                 code_lines = []
@@ -218,7 +243,7 @@ def render_markdown_html(md_text: str) -> str:
                 for h in headers:
                     out.append(
                         "<th style='border:1px solid #ddd;padding:8px;background:#f7f7f7;text-align:left;'>"
-                        + render_inline(h)
+                        + render_table_cell(h)
                         + "</th>"
                     )
                 out.append("</tr></thead>")
@@ -231,7 +256,7 @@ def render_markdown_html(md_text: str) -> str:
                     cells = split_table_row(row_line)
                     out.append("<tr>")
                     for c in cells:
-                        out.append("<td style='border:1px solid #ddd;padding:8px;vertical-align:top;'>" + render_inline(c) + "</td>")
+                        out.append("<td style='border:1px solid #ddd;padding:8px;vertical-align:top;'>" + render_table_cell(c) + "</td>")
                     out.append("</tr>")
                     i += 1
                 out.append("</tbody></table>")
@@ -273,6 +298,8 @@ def render_markdown_html(md_text: str) -> str:
         code_text = "\n".join(code_lines)
         if code_lang.lower() == "mermaid":
             out.append("<pre class='mermaid'>" + html.escape(code_text) + "</pre>")
+        elif code_lang.lower() in {"text", "math", "formula"} and looks_like_formula_block(code_text):
+            out.append("<div class='math-block'>$$\n" + html.escape(convert_formula_text_to_tex(code_text)) + "\n$$</div>")
         else:
             out.append("<pre><code>" + html.escape(code_text) + "</code></pre>")
     if in_ul:
@@ -288,17 +315,35 @@ def render_guide_page(rel: str, md_text: str) -> str:
         "<html><head>"
         "<meta charset='utf-8'/>"
         "<style>"
-        "body{font-family:sans-serif;padding:20px;line-height:1.6;}"
+        "body{font-family:sans-serif;padding:20px;line-height:1.6;overflow-x:hidden;}"
+        "body,main{max-width:100%;}"
+        "table{display:block;max-width:100%;overflow:auto;white-space:nowrap;}"
         "pre{background:#f7f7f8;border:1px solid #e5e7eb;border-radius:8px;padding:12px;overflow:auto;}"
         "code{background:#f3f4f6;border-radius:4px;padding:2px 4px;}"
-        ".math-block{margin:14px 0;overflow:auto;}"
-        "pre.mermaid{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;}"
+        ".math-block{margin:14px 0;overflow:auto;background:transparent;border:none;border-radius:0;padding:0;text-align:left;}"
+        ".math-block mjx-container,.math-block svg{background:transparent !important;}"
+        ".math-block mjx-container[display='true']{display:block !important;text-align:left !important;margin:0 !important;}"
+        "pre.mermaid,.mermaid{background:#fff !important;color:inherit;border:1px solid #e5e7eb;border-radius:8px;padding:12px;}"
+        ".mermaid svg{background:transparent !important;}"
+        ".mermaid svg,.chart-zoomable{cursor:zoom-in;}"
+        "p,li,h1,h2,h3,h4,h5,h6,td,th{overflow-wrap:anywhere;word-break:break-word;}"
         ".md-image-link{display:inline-block;margin:10px 0;}"
         ".md-image{display:block;max-width:min(520px,100%);width:100%;height:auto;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:zoom-in;}"
         "#imgModal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:9999;padding:24px;}"
         "#imgModal.show{display:flex;}"
         "#imgModal img{max-width:95vw;max-height:90vh;width:auto;height:auto;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.45);background:#111;}"
         "#imgModal .close{position:absolute;top:12px;right:16px;color:#fff;font-size:30px;line-height:1;cursor:pointer;}"
+        "#chartModal{position:fixed;inset:0;background:rgba(255,255,255,.98);display:none;align-items:center;justify-content:center;z-index:10000;padding:28px;box-sizing:border-box;}"
+        "#chartModal.show{display:flex;}"
+        "#chartModal .chart-shell{width:min(96vw,1600px);height:min(92vh,980px);display:flex;flex-direction:column;background:#fff;border:1px solid #d8dee7;border-radius:28px;box-shadow:0 30px 80px rgba(15,23,42,.12);overflow:hidden;}"
+        "#chartModal .chart-toolbar{display:flex;gap:14px;align-items:center;justify-content:flex-end;flex-wrap:wrap;padding:6px 12px;color:#111827;background:#fff;text-align:right;min-height:36px;width:50%;align-self:flex-end;box-sizing:border-box;order:2;}"
+        "#chartModal .chart-toolbar button{border:none;background:transparent;color:#0f5cdd;border-radius:0;padding:0;cursor:pointer;text-decoration:none;font:inherit;line-height:1.2;}"
+        "#chartModal .chart-toolbar button:hover{text-decoration:underline;}"
+        "#chartModal .chart-stage{flex:1;position:relative;overflow:hidden;cursor:grab;padding:24px;display:flex;align-items:center;justify-content:center;background:#fff;order:1;}"
+        "#chartModal .chart-stage.dragging{cursor:grabbing;}"
+        "#chartModal .chart-canvas{position:absolute;inset:24px;display:flex;align-items:center;justify-content:center;}"
+        "#chartModal .chart-canvas svg{display:block;width:100%;height:100%;max-width:none !important;max-height:none !important;}"
+        "@media(max-width:900px){body{padding:14px;}table{font-size:14px;}pre{padding:10px;}}"
         "</style>"
         "<script>"
         "window.MathJax={"
@@ -362,6 +407,12 @@ def render_guide_page(rel: str, md_text: str) -> str:
         "<hr/>"
         f"{body}"
         "<div id='imgModal' aria-hidden='true'><span class='close' title='닫기'>&times;</span><img alt='preview'/></div>"
+        "<div id='chartModal' aria-hidden='true'>"
+        "<div class='chart-shell'>"
+        "<div class='chart-toolbar'><button type='button' data-action='zoom-in'>확대</button><button type='button' data-action='zoom-out'>축소</button><button type='button' data-action='reset'>원위치</button><button type='button' data-action='close'>닫기</button></div>"
+        "<div class='chart-stage'><div class='chart-canvas'></div></div>"
+        "</div>"
+        "</div>"
         "<script>"
         "(function(){"
         "  const modal=document.getElementById('imgModal'); if(!modal) return;"
@@ -376,6 +427,50 @@ def render_guide_page(rel: str, md_text: str) -> str:
         "  if(close) close.addEventListener('click', hide);"
         "  modal.addEventListener('click', function(e){ if(e.target===modal) hide(); });"
         "  window.addEventListener('keydown', function(e){ if(e.key==='Escape') hide(); });"
+        "  const chartModal=document.getElementById('chartModal');"
+        "  const chartStage=chartModal?chartModal.querySelector('.chart-stage'):null;"
+        "  const chartCanvas=chartModal?chartModal.querySelector('.chart-canvas'):null;"
+        "  let chartState={svg:null,base:null,current:null,dragging:false,startX:0,startY:0,startViewBox:null};"
+        "  const cloneBox=function(box){ return box?{x:box.x,y:box.y,w:box.w,h:box.h}:null; };"
+        "  const readViewBox=function(svg){ var vb=svg.getAttribute('viewBox'); if(vb){ var p=vb.trim().split(/\\s+/).map(Number); if(p.length===4&&p.every(function(n){return Number.isFinite(n);})){ return {x:p[0],y:p[1],w:p[2],h:p[3]}; } } var width=svg.viewBox&&svg.viewBox.baseVal&&svg.viewBox.baseVal.width?svg.viewBox.baseVal.width:0; var height=svg.viewBox&&svg.viewBox.baseVal&&svg.viewBox.baseVal.height?svg.viewBox.baseVal.height:0; if(!(width>0&&height>0)){ var bbox=svg.getBBox(); width=bbox.width||1000; height=bbox.height||800; return {x:bbox.x||0,y:bbox.y||0,w:width,h:height}; } return {x:0,y:0,w:width,h:height}; };"
+        "  const applyViewBox=function(){ if(chartState.svg&&chartState.current){ chartState.svg.setAttribute('viewBox',[chartState.current.x,chartState.current.y,chartState.current.w,chartState.current.h].join(' ')); } };"
+        "  const resetChart=function(){ chartState.current=cloneBox(chartState.base); applyViewBox(); };"
+        "  const zoomChart=function(factor,originX,originY){ if(!chartState.current||!chartStage) return; var rect=chartStage.getBoundingClientRect(); var ox=typeof originX==='number'?originX:rect.width/2; var oy=typeof originY==='number'?originY:rect.height/2; var rx=Math.max(0,Math.min(1,(ox-24)/Math.max(1,rect.width-48))); var ry=Math.max(0,Math.min(1,(oy-24)/Math.max(1,rect.height-48))); var nextW=chartState.current.w/factor; var nextH=chartState.current.h/factor; chartState.current={x:chartState.current.x+(chartState.current.w-nextW)*rx,y:chartState.current.y+(chartState.current.h-nextH)*ry,w:nextW,h:nextH}; applyViewBox(); };"
+        "  const openChart=function(svg){ if(!chartModal||!chartCanvas||!svg) return; chartCanvas.innerHTML=''; chartState.svg=svg.cloneNode(true); chartState.svg.removeAttribute('style'); chartState.svg.setAttribute('preserveAspectRatio','xMidYMin meet'); chartCanvas.appendChild(chartState.svg); chartState.base=readViewBox(chartState.svg); chartModal.classList.add('show'); chartModal.setAttribute('aria-hidden','false'); resetChart(); };"
+        "  const closeChart=function(){ if(!chartModal||!chartCanvas) return; chartModal.classList.remove('show'); chartModal.setAttribute('aria-hidden','true'); chartCanvas.innerHTML=''; chartState.svg=null; chartState.base=null; chartState.current=null; chartState.dragging=false; if(chartStage) chartStage.classList.remove('dragging'); };"
+        "  document.querySelectorAll('.mermaid svg').forEach(function(svg){ svg.classList.add('chart-zoomable'); svg.addEventListener('click', function(){ openChart(svg); }); });"
+        "  if(chartModal){"
+        "    chartModal.querySelectorAll('button[data-action]').forEach(function(btn){ btn.addEventListener('click', function(){ var action=btn.getAttribute('data-action'); if(action==='close'){ closeChart(); } else if(action==='zoom-in'){ zoomChart(1.2); } else if(action==='zoom-out'){ zoomChart(1/1.2); } else if(action==='reset'){ resetChart(); } }); });"
+        "    chartStage.addEventListener('mousedown', function(e){ if(!chartState.current) return; chartState.dragging=true; chartState.startX=e.clientX; chartState.startY=e.clientY; chartState.startViewBox=cloneBox(chartState.current); chartStage.classList.add('dragging'); });"
+        "    window.addEventListener('mousemove', function(e){ if(!chartState.dragging||!chartState.current||!chartStage) return; var rect=chartStage.getBoundingClientRect(); var dx=e.clientX-chartState.startX; var dy=e.clientY-chartState.startY; chartState.current.x=chartState.startViewBox.x-(dx/Math.max(1,rect.width-48))*chartState.startViewBox.w; chartState.current.y=chartState.startViewBox.y-(dy/Math.max(1,rect.height-48))*chartState.startViewBox.h; applyViewBox(); });"
+        "    window.addEventListener('mouseup', function(){ chartState.dragging=false; chartState.startViewBox=null; if(chartStage) chartStage.classList.remove('dragging'); });"
+        "    chartStage.addEventListener('wheel', function(e){ e.preventDefault(); zoomChart(e.deltaY<0?1.12:1/1.12, e.clientX-chartStage.getBoundingClientRect().left, e.clientY-chartStage.getBoundingClientRect().top); }, {passive:false});"
+        "    chartModal.addEventListener('click', function(e){ if(e.target===chartModal){ closeChart(); } });"
+        "    window.addEventListener('keydown', function(e){ if(e.key==='Escape') closeChart(); });"
+        "  }"
+        "})();"
+        "</script>"
+        "<script>"
+        "(function(){"
+        "  const chartModal=document.getElementById('chartModal');"
+        "  if(!chartModal){return;}"
+        "  const chartStage=chartModal.querySelector('.chart-stage');"
+        "  const chartCanvas=chartModal.querySelector('.chart-canvas');"
+        "  const state={svg:null,base:null,current:null,dragging:false,startX:0,startY:0,startViewBox:null};"
+        "  const cloneBox=function(box){return box?{x:box.x,y:box.y,w:box.w,h:box.h}:null;};"
+        "  const readViewBox=function(svg){var vb=svg.getAttribute('viewBox'); if(vb){var p=vb.trim().split(/\\s+/).map(Number); if(p.length===4&&p.every(Number.isFinite)){return {x:p[0],y:p[1],w:p[2],h:p[3]};}} var bbox=svg.getBBox(); return {x:bbox.x||0,y:bbox.y||0,w:bbox.width||1000,h:bbox.height||800};};"
+        "  const applyViewBox=function(){ if(state.svg&&state.current){ state.svg.setAttribute('viewBox',[state.current.x,state.current.y,state.current.w,state.current.h].join(' ')); } };"
+        "  const reset=function(){ state.current=cloneBox(state.base); applyViewBox(); };"
+        "  const open=function(svg){ chartCanvas.innerHTML=''; state.svg=svg.cloneNode(true); state.svg.removeAttribute('style'); state.svg.setAttribute('preserveAspectRatio','xMidYMin meet'); chartCanvas.appendChild(state.svg); state.base=readViewBox(state.svg); chartModal.classList.add('show'); chartModal.setAttribute('aria-hidden','false'); reset(); };"
+        "  const close=function(){ chartModal.classList.remove('show'); chartModal.setAttribute('aria-hidden','true'); chartCanvas.innerHTML=''; state.svg=null; state.base=null; state.current=null; state.dragging=false; chartStage.classList.remove('dragging'); };"
+        "  const zoom=function(factor,clientX,clientY){ if(!state.current){return;} var rect=chartStage.getBoundingClientRect(); var rx=(typeof clientX==='number')?(clientX-rect.left-24)/Math.max(1,rect.width-48):0.5; var ry=(typeof clientY==='number')?(clientY-rect.top-24)/Math.max(1,rect.height-48):0.5; rx=Math.max(0,Math.min(1,rx)); ry=Math.max(0,Math.min(1,ry)); var nextW=state.current.w/factor; var nextH=state.current.h/factor; state.current={x:state.current.x+(state.current.w-nextW)*rx,y:state.current.y+(state.current.h-nextH)*ry,w:nextW,h:nextH}; applyViewBox(); };"
+        "  document.addEventListener('click', function(e){ var btn=e.target.closest('#chartModal button[data-action]'); if(btn){ e.preventDefault(); e.stopPropagation(); var action=btn.getAttribute('data-action'); if(action==='close'){close();} else if(action==='zoom-in'){zoom(1.2);} else if(action==='zoom-out'){zoom(1/1.2);} else if(action==='reset'){reset();} return; } var svg=e.target.closest('.mermaid svg'); if(svg && !chartModal.contains(svg)){ e.preventDefault(); e.stopPropagation(); open(svg); return; } if(e.target===chartModal){ close(); } }, true);"
+        "  chartStage.addEventListener('pointerdown', function(e){ if(!state.current){return;} state.dragging=true; state.startX=e.clientX; state.startY=e.clientY; state.startViewBox=cloneBox(state.current); chartStage.classList.add('dragging'); chartStage.setPointerCapture(e.pointerId); });"
+        "  chartStage.addEventListener('pointermove', function(e){ if(!state.dragging||!state.current){return;} var rect=chartStage.getBoundingClientRect(); var dx=e.clientX-state.startX; var dy=e.clientY-state.startY; state.current.x=state.startViewBox.x-(dx/Math.max(1,rect.width-48))*state.startViewBox.w; state.current.y=state.startViewBox.y-(dy/Math.max(1,rect.height-48))*state.startViewBox.h; applyViewBox(); });"
+        "  chartStage.addEventListener('pointerup', function(e){ state.dragging=false; state.startViewBox=null; chartStage.classList.remove('dragging'); try{chartStage.releasePointerCapture(e.pointerId);}catch(_e){} });"
+        "  chartStage.addEventListener('pointercancel', function(){ state.dragging=false; state.startViewBox=null; chartStage.classList.remove('dragging'); });"
+        "  chartStage.addEventListener('wheel', function(e){ if(!state.current){return;} e.preventDefault(); zoom(e.deltaY<0?1.12:1/1.12,e.clientX,e.clientY); }, {passive:false});"
+        "  window.addEventListener('keydown', function(e){ if(e.key==='Escape'){ close(); } });"
         "})();"
         "</script>"
         "</body></html>"

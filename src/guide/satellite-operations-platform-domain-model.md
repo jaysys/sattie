@@ -315,31 +315,31 @@ Satellite
 
 실제 시스템 설계 시에는 위성을 단일 객체로 두지 않고 다음과 같이 분리하는 것이 바람직합니다:
 
-### 1️⃣ Satellite Master
+### 1. Satellite Master
 
 → 식별/기본 정보
 
-### 2️⃣ Satellite Capability
+### 2. Satellite Capability
 
 → 촬영/통신/기술적 스펙
 
-### 3️⃣ Satellite Telemetry
+### 3. Satellite Telemetry
 
 → 실시간 상태
 
-### 4️⃣ Satellite Mission
+### 4. Satellite Mission
 
 → 임무 정의
 
-### 5️⃣ Imaging Task
+### 5. Imaging Task
 
 → 촬영 요청 단위
 
-### 6️⃣ Data Product
+### 6. Data Product
 
 → 생성되는 영상 상품
 
-### 7️⃣ Ground Contact Session
+### 7. Ground Contact Session
 
 → 지상국 접속 세션
 
@@ -347,7 +347,7 @@ Satellite
 
 # 18. 아키텍처 설계 시 고려사항
 
-### ✔ 촬영계획시스템과 연동 시
+### 촬영계획시스템과 연동 시
 
 - visibility 계산 모델
 - 기상 데이터 연동
@@ -355,7 +355,7 @@ Satellite
 - 임무 우선순위 엔진
 - 자동 재계획 기능
 
-### ✔ 기지국 제어 연동 시
+### 기지국 제어 연동 시
 
 - Command Queue
 - Acknowledge 처리

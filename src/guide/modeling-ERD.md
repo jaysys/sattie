@@ -5,7 +5,7 @@
 
 ---
 
-# 📡 Satellite Mission Platform ERD (Logical Model)
+# Satellite Mission Platform ERD (Logical Model)
 
 ```mermaid
 erDiagram
@@ -242,7 +242,7 @@ erDiagram
 
 ---
 
-# 📌 다이어그램 구조 요약
+# 다이어그램 구조 요약
 
 이 ERD는 7개 도메인으로 구성됩니다:
 
@@ -256,7 +256,7 @@ erDiagram
 
 ---
 
-# 🔎 설계적 특징
+# 설계적 특징
 
 - **위성 성능은 Profile Set 기반 (유효기간 확장 가능)**
 - **ScheduleSlot이 시간축 충돌 방지의 중심 엔터티**

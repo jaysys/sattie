@@ -1,0 +1,6713 @@
+[
+  {
+    "slug": "api-client-guide",
+    "title": "SATTIE 외부 클라이언트 개발가이드",
+    "summary": "- 서비스명: SATTIE (Virtual Satellite Imagery Service)",
+    "category": "docs",
+    "tags": [],
+    "public_url": "/p/api-client-guide",
+    "updated_at": "2026-03-07T00:09:25Z",
+    "word_count": 759,
+    "reading_minutes": 4,
+    "source_path": "docs/API_CLIENT_GUIDE.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1. 개요",
+        "anchor": "1"
+      },
+      {
+        "level": 2,
+        "text": "2. 핵심 개념",
+        "anchor": "2"
+      },
+      {
+        "level": 2,
+        "text": "3. API 패턴 요약",
+        "anchor": "3-api"
+      },
+      {
+        "level": 2,
+        "text": "4. 빠른 시작",
+        "anchor": "4"
+      },
+      {
+        "level": 3,
+        "text": "4.1 상태 확인",
+        "anchor": "4-1"
+      },
+      {
+        "level": 3,
+        "text": "4.2 랜덤 단건 생성 다운로드",
+        "anchor": "4-2"
+      },
+      {
+        "level": 3,
+        "text": "4.3 OSM 단건 생성 다운로드 (`/images/generate`와 동일 패턴)",
+        "anchor": "4-3-osm-images-generate"
+      },
+      {
+        "level": 3,
+        "text": "4.4 OSM 일괄 생성 후 항목별 다운로드",
+        "anchor": "4-4-osm"
+      },
+      {
+        "level": 2,
+        "text": "5. 엔드포인트 상세",
+        "anchor": "5"
+      },
+      {
+        "level": 3,
+        "text": "5.1 `POST /images/generate`",
+        "anchor": "5-1-post-images-generate"
+      },
+      {
+        "level": 3,
+        "text": "5.2 `POST /osm/images/generate`",
+        "anchor": "5-2-post-osm-images-generate"
+      },
+      {
+        "level": 3,
+        "text": "5.3 `POST /osm/images/generate-all`",
+        "anchor": "5-3-post-osm-images-generate-all"
+      },
+      {
+        "level": 3,
+        "text": "5.4 `GET /images` (랜덤 카탈로그 목록)",
+        "anchor": "5-4-get-images"
+      },
+      {
+        "level": 3,
+        "text": "5.5 `GET /osm/images/items` (OSM 전체 아이템 평탄 목록)",
+        "anchor": "5-5-get-osm-images-items-osm"
+      },
+      {
+        "level": 2,
+        "text": "6. 응답 필드 가이드",
+        "anchor": "6"
+      },
+      {
+        "level": 2,
+        "text": "7. 권장 연동 패턴",
+        "anchor": "7"
+      },
+      {
+        "level": 3,
+        "text": "패턴 A: 파일 즉시 수신(권장)",
+        "anchor": "a"
+      },
+      {
+        "level": 3,
+        "text": "패턴 B: OSM 일괄 생성 후 링크 기반 수신",
+        "anchor": "b-osm"
+      },
+      {
+        "level": 2,
+        "text": "8. 오류 처리 가이드",
+        "anchor": "8"
+      },
+      {
+        "level": 2,
+        "text": "9. 클라이언트 구현 체크리스트",
+        "anchor": "9"
+      },
+      {
+        "level": 2,
+        "text": "10. 참고 API",
+        "anchor": "10-api"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "maintainer-guide",
+    "title": "SATTIE 유지보수 개발자 가이드",
+    "summary": "- 현재 코드 구조를 빠르게 이해하고 안전하게 변경하기 위한 내부 운영/개발 기준 문서입니다.",
+    "category": "docs",
+    "tags": [],
+    "public_url": "/p/maintainer-guide",
+    "updated_at": "2026-03-07T00:17:45Z",
+    "word_count": 722,
+    "reading_minutes": 3,
+    "source_path": "docs/MAINTAINER_GUIDE.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1. 문서 목적",
+        "anchor": "1"
+      },
+      {
+        "level": 2,
+        "text": "2. 기술 스택/실행",
+        "anchor": "2"
+      },
+      {
+        "level": 2,
+        "text": "3. 디렉터리 구조",
+        "anchor": "3"
+      },
+      {
+        "level": 2,
+        "text": "4. 생성기 설계(핵심)",
+        "anchor": "4"
+      },
+      {
+        "level": 3,
+        "text": "4.1 랜덤 생성기",
+        "anchor": "4-1"
+      },
+      {
+        "level": 3,
+        "text": "4.2 OSM 생성기",
+        "anchor": "4-2-osm"
+      },
+      {
+        "level": 2,
+        "text": "5. 레벨/포맷 규칙",
+        "anchor": "5"
+      },
+      {
+        "level": 2,
+        "text": "6. UI-API 연계 포인트",
+        "anchor": "6-ui-api"
+      },
+      {
+        "level": 2,
+        "text": "7. 저장소/데이터 모델",
+        "anchor": "7"
+      },
+      {
+        "level": 3,
+        "text": "7.1 랜덤 저장소",
+        "anchor": "7-1"
+      },
+      {
+        "level": 3,
+        "text": "7.2 OSM 저장소",
+        "anchor": "7-2-osm"
+      },
+      {
+        "level": 2,
+        "text": "8. 운영 명령/검증 절차",
+        "anchor": "8"
+      },
+      {
+        "level": 3,
+        "text": "8.1 기본 검증",
+        "anchor": "8-1"
+      },
+      {
+        "level": 3,
+        "text": "8.2 서버 상태 확인",
+        "anchor": "8-2"
+      },
+      {
+        "level": 3,
+        "text": "8.3 문서 반영 확인",
+        "anchor": "8-3"
+      },
+      {
+        "level": 2,
+        "text": "9. 트러블슈팅",
+        "anchor": "9"
+      },
+      {
+        "level": 3,
+        "text": "9.1 FastAPI `Invalid args for response field`",
+        "anchor": "9-1-fastapi-invalid-args-for-response-field"
+      },
+      {
+        "level": 3,
+        "text": "9.2 OSM 생성 실패(502)",
+        "anchor": "9-2-osm-502"
+      },
+      {
+        "level": 3,
+        "text": "9.3 TIFF 미리보기 깨짐",
+        "anchor": "9-3-tiff"
+      },
+      {
+        "level": 3,
+        "text": "9.4 Swagger 문구가 즉시 안 바뀜",
+        "anchor": "9-4-swagger"
+      },
+      {
+        "level": 2,
+        "text": "10. 변경 가이드",
+        "anchor": "10"
+      },
+      {
+        "level": 3,
+        "text": "10.1 새 포맷 추가",
+        "anchor": "10-1"
+      },
+      {
+        "level": 3,
+        "text": "10.2 새 레벨 추가",
+        "anchor": "10-2"
+      },
+      {
+        "level": 3,
+        "text": "10.3 Provider(예: Google) 추가 검토",
+        "anchor": "10-3-provider-google"
+      },
+      {
+        "level": 2,
+        "text": "11. 권장 품질 체크리스트",
+        "anchor": "11"
+      },
+      {
+        "level": 2,
+        "text": "12. 현재 주의사항",
+        "anchor": "12"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "system-design",
+    "title": "SATTIE 시스템 설계 문서",
+    "summary": "- 외부 연동, 내부 유지보수, 기능 확장 시 기준이 되는 단일 기술 산출물을 제공한다.",
+    "category": "docs",
+    "tags": [],
+    "public_url": "/p/system-design",
+    "updated_at": "2026-03-07T00:17:50Z",
+    "word_count": 1159,
+    "reading_minutes": 5,
+    "source_path": "docs/SYSTEM_DESIGN.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1. 문서 목적",
+        "anchor": "1"
+      },
+      {
+        "level": 2,
+        "text": "2. 시스템 목표와 범위",
+        "anchor": "2"
+      },
+      {
+        "level": 2,
+        "text": "3. 아키텍처 개요",
+        "anchor": "3"
+      },
+      {
+        "level": 3,
+        "text": "3.1 계층 구조",
+        "anchor": "3-1"
+      },
+      {
+        "level": 3,
+        "text": "3.2 런타임 상태",
+        "anchor": "3-2"
+      },
+      {
+        "level": 2,
+        "text": "4. 데이터 모델",
+        "anchor": "4"
+      },
+      {
+        "level": 3,
+        "text": "4.1 핵심 엔티티: `ImageItem` (`app/core.py`)",
+        "anchor": "4-1-imageitem-app-core-py"
+      },
+      {
+        "level": 3,
+        "text": "4.2 포맷/레벨 규칙",
+        "anchor": "4-2"
+      },
+      {
+        "level": 2,
+        "text": "5. 저장소 설계",
+        "anchor": "5"
+      },
+      {
+        "level": 3,
+        "text": "5.1 경로",
+        "anchor": "5-1"
+      },
+      {
+        "level": 3,
+        "text": "5.2 랜덤 저장소 정책",
+        "anchor": "5-2"
+      },
+      {
+        "level": 3,
+        "text": "5.3 OSM 저장소 정책",
+        "anchor": "5-3-osm"
+      },
+      {
+        "level": 2,
+        "text": "6. API 설계",
+        "anchor": "6-api"
+      },
+      {
+        "level": 3,
+        "text": "6.1 서비스/공통",
+        "anchor": "6-1"
+      },
+      {
+        "level": 3,
+        "text": "6.2 랜덤 샘플 API",
+        "anchor": "6-2-api"
+      },
+      {
+        "level": 3,
+        "text": "6.3 OSM 샘플 API",
+        "anchor": "6-3-osm-api"
+      },
+      {
+        "level": 3,
+        "text": "6.4 관리 API",
+        "anchor": "6-4-api"
+      },
+      {
+        "level": 2,
+        "text": "7. 핵심 처리 시퀀스",
+        "anchor": "7"
+      },
+      {
+        "level": 3,
+        "text": "7.1 랜덤 단건 생성 (`/images/generate`)",
+        "anchor": "7-1-images-generate"
+      },
+      {
+        "level": 3,
+        "text": "7.2 OSM 단건 생성 (`/osm/images/generate`)",
+        "anchor": "7-2-osm-osm-images-generate"
+      },
+      {
+        "level": 3,
+        "text": "7.3 OSM 일괄 생성 (`/osm/images/generate-all`)",
+        "anchor": "7-3-osm-osm-images-generate-all"
+      },
+      {
+        "level": 2,
+        "text": "8. 이미지 생성/변환 설계",
+        "anchor": "8"
+      },
+      {
+        "level": 3,
+        "text": "8.1 TIFF 작성",
+        "anchor": "8-1-tiff"
+      },
+      {
+        "level": 3,
+        "text": "8.2 미리보기 변환",
+        "anchor": "8-2"
+      },
+      {
+        "level": 3,
+        "text": "8.3 SAR 흑백 모사",
+        "anchor": "8-3-sar"
+      },
+      {
+        "level": 2,
+        "text": "9. UI 설계 요약",
+        "anchor": "9-ui"
+      },
+      {
+        "level": 2,
+        "text": "10. 오류/예외 설계",
+        "anchor": "10"
+      },
+      {
+        "level": 2,
+        "text": "11. 운영/배포 관점",
+        "anchor": "11"
+      },
+      {
+        "level": 2,
+        "text": "12. 확장 설계 가이드",
+        "anchor": "12"
+      },
+      {
+        "level": 3,
+        "text": "12.1 새 포맷/레벨 추가",
+        "anchor": "12-1"
+      },
+      {
+        "level": 3,
+        "text": "12.2 새 Provider 추가(예: Google)",
+        "anchor": "12-2-provider-google"
+      },
+      {
+        "level": 2,
+        "text": "13. 현재 설계상 주의 포인트",
+        "anchor": "13"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "work-plan",
+    "title": "SATTIE 문서화 작업 플랜",
+    "summary": "- 외부 클라이언트가 API를 빠르게 연동할 수 있는 개발가이드를 제공한다.",
+    "category": "docs",
+    "tags": [],
+    "public_url": "/p/work-plan",
+    "updated_at": "2026-03-07T00:09:25Z",
+    "word_count": 251,
+    "reading_minutes": 2,
+    "source_path": "docs/WORK_PLAN.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1. 목적",
+        "anchor": "1"
+      },
+      {
+        "level": 2,
+        "text": "2. 산출물",
+        "anchor": "2"
+      },
+      {
+        "level": 2,
+        "text": "3. 진행 순서",
+        "anchor": "3"
+      },
+      {
+        "level": 2,
+        "text": "4. 작성 원칙",
+        "anchor": "4"
+      },
+      {
+        "level": 2,
+        "text": "5. 완료 기준",
+        "anchor": "5"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "imaging-feasibility-analysis-procedure",
+    "title": "촬영가능성 계산 절차 조사",
+    "summary": "기준일: 2026-03-07",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/imaging-feasibility-analysis-procedure",
+    "updated_at": "2026-03-13T16:22:53Z",
+    "word_count": 2630,
+    "reading_minutes": 11,
+    "source_path": "guide/imaging-feasibility-analysis-procedure.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "한 줄 결론",
+        "anchor": "document"
+      },
+      {
+        "level": 2,
+        "text": "왜 별도 절차가 필요한가",
+        "anchor": "document-2"
+      },
+      {
+        "level": 2,
+        "text": "한국 사례에서 feasibility가 놓이는 위치",
+        "anchor": "feasibility"
+      },
+      {
+        "level": 2,
+        "text": "촬영가능성 계산의 목적",
+        "anchor": "document-3"
+      },
+      {
+        "level": 2,
+        "text": "절차 개요",
+        "anchor": "document-4"
+      },
+      {
+        "level": 2,
+        "text": "단계별 상세",
+        "anchor": "document-5"
+      },
+      {
+        "level": 3,
+        "text": "1. 요청 정규화",
+        "anchor": "1"
+      },
+      {
+        "level": 3,
+        "text": "2. 서비스/정책 제약 검증",
+        "anchor": "2"
+      },
+      {
+        "level": 3,
+        "text": "3. 기하 접근 가능성 계산",
+        "anchor": "3"
+      },
+      {
+        "level": 3,
+        "text": "4. 자세·센서 운용성 계산",
+        "anchor": "4"
+      },
+      {
+        "level": 3,
+        "text": "5. 광학/기상 또는 레이더 조건 계산",
+        "anchor": "5"
+      },
+      {
+        "level": 3,
+        "text": "6. 위성 자원 계산",
+        "anchor": "6"
+      },
+      {
+        "level": 3,
+        "text": "7. downlink 및 지상국 자원 계산",
+        "anchor": "7-downlink"
+      },
+      {
+        "level": 3,
+        "text": "8. 충돌 해소와 우선순위 반영",
+        "anchor": "8"
+      },
+      {
+        "level": 3,
+        "text": "9. Feasibility proposal 산출",
+        "anchor": "9-feasibility-proposal"
+      },
+      {
+        "level": 2,
+        "text": "수치 모델: 전문가 실무에서 자주 쓰는 판정 방식",
+        "anchor": "document-6"
+      },
+      {
+        "level": 3,
+        "text": "1. hard constraint와 soft constraint를 분리한다",
+        "anchor": "1-hard-constraint-soft-constraint"
+      },
+      {
+        "level": 3,
+        "text": "2. 성공 확률을 곱셈형으로 근사한다",
+        "anchor": "2-2"
+      },
+      {
+        "level": 3,
+        "text": "3. 결과를 수치 등급으로 제시한다",
+        "anchor": "3-2"
+      },
+      {
+        "level": 2,
+        "text": "수치 예제 1: 광학 주문의 feasibility 계산",
+        "anchor": "1-feasibility"
+      },
+      {
+        "level": 3,
+        "text": "조건",
+        "anchor": "document-7"
+      },
+      {
+        "level": 3,
+        "text": "1단계. 기하 접근 필터",
+        "anchor": "1-2"
+      },
+      {
+        "level": 3,
+        "text": "2단계. 태양/품질 조건 필터",
+        "anchor": "2-3"
+      },
+      {
+        "level": 3,
+        "text": "3단계. 기상 확률 반영",
+        "anchor": "3-3"
+      },
+      {
+        "level": 3,
+        "text": "해석",
+        "anchor": "document-8"
+      },
+      {
+        "level": 2,
+        "text": "수치 예제 2: SIIS Standard 정책과 확률 해석",
+        "anchor": "2-siis-standard"
+      },
+      {
+        "level": 3,
+        "text": "해석",
+        "anchor": "document-9"
+      },
+      {
+        "level": 2,
+        "text": "수치 예제 3: SAR 주문은 기상보다 자원·다운링크가 지배적일 수 있다",
+        "anchor": "3-sar"
+      },
+      {
+        "level": 3,
+        "text": "조건",
+        "anchor": "document-10"
+      },
+      {
+        "level": 3,
+        "text": "1단계. 기하/입사각 판정",
+        "anchor": "1-3"
+      },
+      {
+        "level": 3,
+        "text": "2단계. 데이터량과 downlink 계산",
+        "anchor": "2-downlink"
+      },
+      {
+        "level": 3,
+        "text": "3단계. recorder backlog 반영",
+        "anchor": "3-recorder-backlog"
+      },
+      {
+        "level": 3,
+        "text": "해석",
+        "anchor": "document-11"
+      },
+      {
+        "level": 2,
+        "text": "케이스 해석: 어떤 요청이 실제로 더 타당한가",
+        "anchor": "document-12"
+      },
+      {
+        "level": 3,
+        "text": "케이스 A. 광학, 짧은 기간, 강한 cloud 제약",
+        "anchor": "a-cloud"
+      },
+      {
+        "level": 3,
+        "text": "케이스 B. 광학, 긴 기간, Standard 옵션",
+        "anchor": "b-standard"
+      },
+      {
+        "level": 3,
+        "text": "케이스 C. SAR, 긴급 주문",
+        "anchor": "c-sar"
+      },
+      {
+        "level": 2,
+        "text": "전문가가 feasibility proposal에 넣어야 하는 숫자",
+        "anchor": "feasibility-proposal"
+      },
+      {
+        "level": 2,
+        "text": "최종 정리",
+        "anchor": "document-13"
+      },
+      {
+        "level": 2,
+        "text": "출처",
+        "anchor": "document-14"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "integrated-erd",
+    "title": "통합 ERD",
+    "summary": "- `modleing-ERD-v2.md`를 운영 기준 베이스로 사용",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/integrated-erd",
+    "updated_at": "2026-03-13T16:22:53Z",
+    "word_count": 4922,
+    "reading_minutes": 20,
+    "source_path": "guide/integrated-ERD.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "통합 기준",
+        "anchor": "document"
+      },
+      {
+        "level": 2,
+        "text": "공통 핵심 엔터티",
+        "anchor": "document-2"
+      },
+      {
+        "level": 2,
+        "text": "통합 ERD (Mermaid)",
+        "anchor": "erd-mermaid"
+      },
+      {
+        "level": 2,
+        "text": "해석 메모",
+        "anchor": "document-3"
+      },
+      {
+        "level": 2,
+        "text": "테이블 정의서",
+        "anchor": "document-4"
+      },
+      {
+        "level": 3,
+        "text": "1. Identity / Tenant Domain",
+        "anchor": "1-identity-tenant-domain"
+      },
+      {
+        "level": 3,
+        "text": "2. Satellite / Asset Domain",
+        "anchor": "2-satellite-asset-domain"
+      },
+      {
+        "level": 3,
+        "text": "3. Orbit / Ground Domain",
+        "anchor": "3-orbit-ground-domain"
+      },
+      {
+        "level": 3,
+        "text": "4. Tasking / Feasibility Domain",
+        "anchor": "4-tasking-feasibility-domain"
+      },
+      {
+        "level": 3,
+        "text": "5. Scheduling / Execution Domain",
+        "anchor": "5-scheduling-execution-domain"
+      },
+      {
+        "level": 3,
+        "text": "6. Product / Downlink / Delivery Domain",
+        "anchor": "6-product-downlink-delivery-domain"
+      },
+      {
+        "level": 3,
+        "text": "7. Audit Domain",
+        "anchor": "7-audit-domain"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "korea-eo-sar-data-level-definitions",
+    "title": "korea eo sar data level definitions",
+    "summary": "**대한민국에서 운영·서비스되는 EO/SAR 위성 데이터의 Level 정의(L0~L4)**를",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/korea-eo-sar-data-level-definitions",
+    "updated_at": "2026-03-05T15:34:58Z",
+    "word_count": 675,
+    "reading_minutes": 3,
+    "source_path": "guide/korea-eo-sar-data-level-definitions.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1) 위성 데이터 Level 체계 (국제 공통 정의)",
+        "anchor": "1-level"
+      },
+      {
+        "level": 2,
+        "text": "2) 한국 **SAR 위성(KOMPSAT-5)**의 Level 사례",
+        "anchor": "2-sar-kompsat-5-level"
+      },
+      {
+        "level": 3,
+        "text": "▪ **L0 – Raw SAR Signal Data**",
+        "anchor": "l0-raw-sar-signal-data"
+      },
+      {
+        "level": 3,
+        "text": "▪ **L1A – Focused Complex Image**",
+        "anchor": "l1a-focused-complex-image"
+      },
+      {
+        "level": 3,
+        "text": "▪ **L1C – Projected Intensity Image (Topo Projection)**",
+        "anchor": "l1c-projected-intensity-image-topo-projection"
+      },
+      {
+        "level": 3,
+        "text": "▪ **L1D – Geocoded Intensity Image**",
+        "anchor": "l1d-geocoded-intensity-image"
+      },
+      {
+        "level": 2,
+        "text": "3) 한국 **EO 위성** Level 체계 (일반 EO 정의)",
+        "anchor": "3-eo-level-eo"
+      },
+      {
+        "level": 3,
+        "text": "EO Level 설명 (일반적 정의)",
+        "anchor": "eo-level"
+      },
+      {
+        "level": 2,
+        "text": "4) EO vs SAR Level 비교 (한국 위성 기준)",
+        "anchor": "4-eo-vs-sar-level"
+      },
+      {
+        "level": 2,
+        "text": "5) 한국 위성 Level 자료 저장 형식 (예)",
+        "anchor": "5-level"
+      },
+      {
+        "level": 2,
+        "text": "요약",
+        "anchor": "document"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "leo-satellite-operations-scheduling-and-commanding",
+    "title": "1. 궤도 기하학(형태) 기준",
+    "summary": "“LEO 위성”은 **Low Earth Orbit Satellite**, 즉 **저궤도 위성**을 의미합니다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/leo-satellite-operations-scheduling-and-commanding",
+    "updated_at": "2026-03-14T08:30:01Z",
+    "word_count": 5246,
+    "reading_minutes": 21,
+    "source_path": "guide/leo-satellite-operations-scheduling-and-commanding.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1. 정의",
+        "anchor": "1"
+      },
+      {
+        "level": 2,
+        "text": "2. 특징",
+        "anchor": "2"
+      },
+      {
+        "level": 3,
+        "text": "① 지연시간(Latency)이 낮음",
+        "anchor": "latency"
+      },
+      {
+        "level": 3,
+        "text": "② 고속·고품질 통신 가능",
+        "anchor": "document"
+      },
+      {
+        "level": 3,
+        "text": "③ 수명은 비교적 짧음",
+        "anchor": "document-2"
+      },
+      {
+        "level": 3,
+        "text": "④ 다수 위성 군집(Consetllation) 필요",
+        "anchor": "consetllation"
+      },
+      {
+        "level": 2,
+        "text": "3. LEO vs 다른 궤도 비교",
+        "anchor": "3-leo-vs"
+      },
+      {
+        "level": 2,
+        "text": "4. 주요 활용 분야",
+        "anchor": "4"
+      },
+      {
+        "level": 2,
+        "text": "1. 고도 기준 1차 분류",
+        "anchor": "1-1"
+      },
+      {
+        "level": 3,
+        "text": "■ LEO (Low Earth Orbit)",
+        "anchor": "leo-low-earth-orbit"
+      },
+      {
+        "level": 3,
+        "text": "■ MEO (Medium Earth Orbit)",
+        "anchor": "meo-medium-earth-orbit"
+      },
+      {
+        "level": 3,
+        "text": "■ GEO (Geostationary Earth Orbit)",
+        "anchor": "geo-geostationary-earth-orbit"
+      },
+      {
+        "level": 2,
+        "text": "2. 왜 고도로 나누는가?",
+        "anchor": "2-2"
+      },
+      {
+        "level": 2,
+        "text": "3. 하지만 고도만이 기준은 아님",
+        "anchor": "3"
+      },
+      {
+        "level": 3,
+        "text": "■ 원궤도 (Circular Orbit)",
+        "anchor": "circular-orbit"
+      },
+      {
+        "level": 3,
+        "text": "■ 타원궤도 (Elliptical Orbit)",
+        "anchor": "elliptical-orbit"
+      },
+      {
+        "level": 3,
+        "text": "■ 적도궤도 (Equatorial Orbit)",
+        "anchor": "equatorial-orbit"
+      },
+      {
+        "level": 3,
+        "text": "■ 경사궤도 (Inclined Orbit)",
+        "anchor": "inclined-orbit"
+      },
+      {
+        "level": 3,
+        "text": "■ 극궤도 (Polar Orbit)",
+        "anchor": "polar-orbit"
+      },
+      {
+        "level": 3,
+        "text": "■ 태양동기궤도 (SSO)",
+        "anchor": "sso"
+      },
+      {
+        "level": 3,
+        "text": "■ 정지궤도 (Geostationary Orbit)",
+        "anchor": "geostationary-orbit"
+      },
+      {
+        "level": 3,
+        "text": "■ 동기궤도 (Geosynchronous Orbit)",
+        "anchor": "geosynchronous-orbit"
+      },
+      {
+        "level": 3,
+        "text": "■ 통신 위성",
+        "anchor": "document-3"
+      },
+      {
+        "level": 3,
+        "text": "■ 항법 위성",
+        "anchor": "document-4"
+      },
+      {
+        "level": 3,
+        "text": "■ 지구관측",
+        "anchor": "document-5"
+      },
+      {
+        "level": 3,
+        "text": "■ 정찰/군사",
+        "anchor": "document-6"
+      },
+      {
+        "level": 3,
+        "text": "■ Molniya 궤도",
+        "anchor": "molniya"
+      },
+      {
+        "level": 3,
+        "text": "■ Tundra 궤도",
+        "anchor": "tundra"
+      },
+      {
+        "level": 3,
+        "text": "■ 라그랑주점 궤도 (L1, L2 등)",
+        "anchor": "l1-l2"
+      },
+      {
+        "level": 2,
+        "text": "1) 위성 운용 스케줄과 계획 데이터",
+        "anchor": "1-2"
+      },
+      {
+        "level": 2,
+        "text": "2) Schedule(스케줄) + Visibility 고려",
+        "anchor": "2-schedule-visibility"
+      },
+      {
+        "level": 2,
+        "text": "3) 업링크 방식",
+        "anchor": "3-2"
+      },
+      {
+        "level": 2,
+        "text": "4) 예 - 실제 운영 사례",
+        "anchor": "4-2"
+      },
+      {
+        "level": 2,
+        "text": "5) 정리",
+        "anchor": "5"
+      },
+      {
+        "level": 2,
+        "text": "부가",
+        "anchor": "document-7"
+      },
+      {
+        "level": 2,
+        "text": "구조",
+        "anchor": "document-8"
+      },
+      {
+        "level": 2,
+        "text": "동작 방식",
+        "anchor": "document-9"
+      },
+      {
+        "level": 2,
+        "text": "우선순위 계층 예시",
+        "anchor": "document-10"
+      },
+      {
+        "level": 3,
+        "text": "처리 방식",
+        "anchor": "document-11"
+      },
+      {
+        "level": 3,
+        "text": "(1) 지상에서 재스케줄링 후 재업링크",
+        "anchor": "1-3"
+      },
+      {
+        "level": 3,
+        "text": "(2) Onboard Replanning 기능",
+        "anchor": "2-onboard-replanning"
+      },
+      {
+        "level": 2,
+        "text": "스케줄링 문제는 본질적으로",
+        "anchor": "document-12"
+      },
+      {
+        "level": 2,
+        "text": "사용 기법",
+        "anchor": "document-13"
+      },
+      {
+        "level": 2,
+        "text": "기본 구조",
+        "anchor": "document-14"
+      },
+      {
+        "level": 3,
+        "text": "(1) Telecommand (TC)",
+        "anchor": "1-telecommand-tc"
+      },
+      {
+        "level": 3,
+        "text": "(2) Telemetry (TM)",
+        "anchor": "2-telemetry-tm"
+      },
+      {
+        "level": 2,
+        "text": "보안",
+        "anchor": "document-15"
+      },
+      {
+        "level": 2,
+        "text": "전송 계층",
+        "anchor": "document-16"
+      },
+      {
+        "level": 2,
+        "text": "(1) 지상 임무계획 단계 (논리 포맷 예)",
+        "anchor": "1-4"
+      },
+      {
+        "level": 2,
+        "text": "(2) 위성용 실행 스케줄 테이블 예",
+        "anchor": "2-3"
+      },
+      {
+        "level": 2,
+        "text": "(3) 실제 업링크 패킷 (CCSDS TC)",
+        "anchor": "3-ccsds-tc"
+      },
+      {
+        "level": 2,
+        "text": "하루 흐름",
+        "anchor": "document-17"
+      },
+      {
+        "level": 3,
+        "text": "00:00 UTC",
+        "anchor": "00-00-utc"
+      },
+      {
+        "level": 3,
+        "text": "02:00 UTC",
+        "anchor": "02-00-utc"
+      },
+      {
+        "level": 3,
+        "text": "03:10 UTC (첫 패스)",
+        "anchor": "03-10-utc"
+      },
+      {
+        "level": 3,
+        "text": "궤도 중",
+        "anchor": "document-18"
+      },
+      {
+        "level": 3,
+        "text": "다음 패스",
+        "anchor": "document-19"
+      },
+      {
+        "level": 2,
+        "text": "구조",
+        "anchor": "document-20"
+      },
+      {
+        "level": 2,
+        "text": "특징",
+        "anchor": "document-21"
+      },
+      {
+        "level": 3,
+        "text": "필요 기술",
+        "anchor": "document-22"
+      },
+      {
+        "level": 3,
+        "text": "장점",
+        "anchor": "document-23"
+      },
+      {
+        "level": 2,
+        "text": "Maxar (WorldView 계열)",
+        "anchor": "maxar-worldview"
+      },
+      {
+        "level": 3,
+        "text": "특징",
+        "anchor": "document-24"
+      },
+      {
+        "level": 3,
+        "text": "운용 구조",
+        "anchor": "document-25"
+      },
+      {
+        "level": 3,
+        "text": "스케줄링",
+        "anchor": "document-26"
+      },
+      {
+        "level": 2,
+        "text": "Planet (Dove / SkySat)",
+        "anchor": "planet-dove-skysat"
+      },
+      {
+        "level": 3,
+        "text": "특징",
+        "anchor": "document-27"
+      },
+      {
+        "level": 3,
+        "text": "운용 구조",
+        "anchor": "document-28"
+      },
+      {
+        "level": 3,
+        "text": "스케줄링",
+        "anchor": "document-29"
+      },
+      {
+        "level": 2,
+        "text": "핵심 차이",
+        "anchor": "document-30"
+      },
+      {
+        "level": 2,
+        "text": "주요 차이점",
+        "anchor": "document-31"
+      },
+      {
+        "level": 3,
+        "text": "① 우선순위",
+        "anchor": "document-32"
+      },
+      {
+        "level": 3,
+        "text": "② 보안",
+        "anchor": "document-33"
+      },
+      {
+        "level": 3,
+        "text": "③ 자율성",
+        "anchor": "document-34"
+      },
+      {
+        "level": 3,
+        "text": "④ 통신",
+        "anchor": "document-35"
+      },
+      {
+        "level": 3,
+        "text": "⑤ 촬영 방식",
+        "anchor": "document-36"
+      },
+      {
+        "level": 2,
+        "text": "대략적 수치",
+        "anchor": "document-37"
+      },
+      {
+        "level": 2,
+        "text": "가정",
+        "anchor": "document-38"
+      },
+      {
+        "level": 2,
+        "text": "(1) 자세기동 시간",
+        "anchor": "1-5"
+      },
+      {
+        "level": 2,
+        "text": "(2) 전력 예",
+        "anchor": "2-4"
+      },
+      {
+        "level": 2,
+        "text": "의사결정 변수",
+        "anchor": "document-39"
+      },
+      {
+        "level": 2,
+        "text": "목적함수 (예시)",
+        "anchor": "document-40"
+      },
+      {
+        "level": 2,
+        "text": "제약 조건",
+        "anchor": "document-41"
+      },
+      {
+        "level": 3,
+        "text": "(1) 가시성 제약",
+        "anchor": "1-6"
+      },
+      {
+        "level": 3,
+        "text": "(2) 시간 충돌 제약",
+        "anchor": "2-5"
+      },
+      {
+        "level": 3,
+        "text": "(3) 전력 제약",
+        "anchor": "3-3"
+      },
+      {
+        "level": 3,
+        "text": "(4) 저장 용량 제약",
+        "anchor": "4-3"
+      },
+      {
+        "level": 2,
+        "text": "현실",
+        "anchor": "document-42"
+      },
+      {
+        "level": 2,
+        "text": "(1) 기본 조건",
+        "anchor": "1-7"
+      },
+      {
+        "level": 2,
+        "text": "(2) Off-nadir 제약",
+        "anchor": "2-off-nadir"
+      },
+      {
+        "level": 2,
+        "text": "(3) 태양 고도 조건 (광학 위성)",
+        "anchor": "3-4"
+      },
+      {
+        "level": 2,
+        "text": "결과",
+        "anchor": "document-43"
+      },
+      {
+        "level": 2,
+        "text": "장점",
+        "anchor": "document-44"
+      },
+      {
+        "level": 2,
+        "text": "주요 제약",
+        "anchor": "document-45"
+      },
+      {
+        "level": 3,
+        "text": "(1) 전력",
+        "anchor": "1-8"
+      },
+      {
+        "level": 3,
+        "text": "(2) 안테나 길이 방향",
+        "anchor": "2-6"
+      },
+      {
+        "level": 3,
+        "text": "(3) 데이터량",
+        "anchor": "3-5"
+      },
+      {
+        "level": 2,
+        "text": "스케줄링 차이",
+        "anchor": "document-46"
+      },
+      {
+        "level": 2,
+        "text": "① 해상도 문제",
+        "anchor": "document-47"
+      },
+      {
+        "level": 2,
+        "text": "② 신호대잡음비 감소",
+        "anchor": "document-48"
+      },
+      {
+        "level": 2,
+        "text": "③ 대기 왜곡 영향 큼",
+        "anchor": "document-49"
+      },
+      {
+        "level": 2,
+        "text": "④ 비용",
+        "anchor": "document-50"
+      },
+      {
+        "level": 2,
+        "text": "그래서 GEO는",
+        "anchor": "geo"
+      },
+      {
+        "level": 2,
+        "text": "가정 조건",
+        "anchor": "document-51"
+      },
+      {
+        "level": 2,
+        "text": "① 한 orbit당 촬영 가능 시간",
+        "anchor": "orbit"
+      },
+      {
+        "level": 2,
+        "text": "② 하루 총 촬영 가능 건수",
+        "anchor": "document-52"
+      },
+      {
+        "level": 2,
+        "text": "③ 데이터량 계산",
+        "anchor": "document-53"
+      },
+      {
+        "level": 2,
+        "text": "④ 전력 검증",
+        "anchor": "document-54"
+      },
+      {
+        "level": 2,
+        "text": "단계 구조",
+        "anchor": "document-55"
+      },
+      {
+        "level": 3,
+        "text": "Step 1: Global Task Pool 생성",
+        "anchor": "step-1-global-task-pool"
+      },
+      {
+        "level": 3,
+        "text": "Step 2: Visibility Matrix 생성",
+        "anchor": "step-2-visibility-matrix"
+      },
+      {
+        "level": 3,
+        "text": "Step 3: 1차 할당 (Assignment)",
+        "anchor": "step-3-1-assignment"
+      },
+      {
+        "level": 3,
+        "text": "Step 4: Local Sequencing",
+        "anchor": "step-4-local-sequencing"
+      },
+      {
+        "level": 3,
+        "text": "Step 5: Rolling Re-Optimization",
+        "anchor": "step-5-rolling-re-optimization"
+      },
+      {
+        "level": 2,
+        "text": "핵심",
+        "anchor": "document-56"
+      },
+      {
+        "level": 2,
+        "text": "① 외부 기상모델 사용",
+        "anchor": "document-57"
+      },
+      {
+        "level": 2,
+        "text": "② 스케줄링 반영 방식",
+        "anchor": "document-58"
+      },
+      {
+        "level": 2,
+        "text": "③ 실전 전략",
+        "anchor": "document-59"
+      },
+      {
+        "level": 2,
+        "text": "④ 고급 시스템",
+        "anchor": "document-60"
+      },
+      {
+        "level": 2,
+        "text": "Step 1: 시장 요구 정의",
+        "anchor": "step-1"
+      },
+      {
+        "level": 2,
+        "text": "Step 2: 궤도 설계",
+        "anchor": "step-2"
+      },
+      {
+        "level": 2,
+        "text": "Step 3: 광학계 직경 결정",
+        "anchor": "step-3"
+      },
+      {
+        "level": 2,
+        "text": "Step 4: 기동 성능 역산",
+        "anchor": "step-4"
+      },
+      {
+        "level": 2,
+        "text": "Step 5: 전력 시스템 설계",
+        "anchor": "step-5"
+      },
+      {
+        "level": 2,
+        "text": "Step 6: 저장/통신 설계",
+        "anchor": "step-6"
+      },
+      {
+        "level": 2,
+        "text": "핵심 설계 철학",
+        "anchor": "document-61"
+      },
+      {
+        "level": 2,
+        "text": "1) 촬영요청이 여러 건 들어온다",
+        "anchor": "1-9"
+      },
+      {
+        "level": 2,
+        "text": "2) 지상 임무계획 시스템이 “여러 요청”을 스케줄로 만든다",
+        "anchor": "2-7"
+      },
+      {
+        "level": 2,
+        "text": "3) 그 스케줄을 “명령 시퀀스(커맨드 묶음)”로 컴파일한다",
+        "anchor": "3-6"
+      },
+      {
+        "level": 2,
+        "text": "4) 지상국 패스(가시창) 때 “배치 업링크(Batch Upload)” 한다",
+        "anchor": "4-batch-upload"
+      },
+      {
+        "level": 2,
+        "text": "5) 위성은 온보드에서 저장하고, 스케줄대로 실행한다",
+        "anchor": "5-2"
+      },
+      {
+        "level": 2,
+        "text": "6) 변경/긴급요청이 생기면 “다음 패스에서 재업로드(부분 업데이트)” 한다",
+        "anchor": "6"
+      },
+      {
+        "level": 3,
+        "text": "결론(질문에 대한 한 줄 답)",
+        "anchor": "document-62"
+      },
+      {
+        "level": 2,
+        "text": "기본 프레임 구조",
+        "anchor": "document-63"
+      },
+      {
+        "level": 3,
+        "text": "(1) Primary Header",
+        "anchor": "1-primary-header"
+      },
+      {
+        "level": 3,
+        "text": "(2) Secondary Header (미션 정의)",
+        "anchor": "2-secondary-header"
+      },
+      {
+        "level": 3,
+        "text": "(3) Application Data Field ← 핵심",
+        "anchor": "3-application-data-field"
+      },
+      {
+        "level": 3,
+        "text": "(4) Error Control",
+        "anchor": "4-error-control"
+      },
+      {
+        "level": 2,
+        "text": "(A) Slew / Pointing Command 파라미터",
+        "anchor": "a-slew-pointing-command"
+      },
+      {
+        "level": 2,
+        "text": "(B) Imaging Payload Command 파라미터",
+        "anchor": "b-imaging-payload-command"
+      },
+      {
+        "level": 2,
+        "text": "(C) Data Handling 파라미터",
+        "anchor": "c-data-handling"
+      },
+      {
+        "level": 2,
+        "text": "(1) Primary Header (6 bytes)",
+        "anchor": "1-primary-header-6-bytes"
+      },
+      {
+        "level": 2,
+        "text": "(2) Secondary Header (Mission Defined)",
+        "anchor": "2-secondary-header-mission-defined"
+      },
+      {
+        "level": 2,
+        "text": "(3) Application Data Field",
+        "anchor": "3-application-data-field-2"
+      },
+      {
+        "level": 2,
+        "text": "(4) Error Control",
+        "anchor": "4-error-control-2"
+      },
+      {
+        "level": 3,
+        "text": "실제 전송은",
+        "anchor": "document-64"
+      },
+      {
+        "level": 2,
+        "text": "특징",
+        "anchor": "document-65"
+      },
+      {
+        "level": 2,
+        "text": "예시: 단일 촬영 커맨드",
+        "anchor": "document-66"
+      },
+      {
+        "level": 2,
+        "text": "Stored Sequence 기능 없음인 경우",
+        "anchor": "stored-sequence"
+      },
+      {
+        "level": 2,
+        "text": "Stored Sequence",
+        "anchor": "stored-sequence-2"
+      },
+      {
+        "level": 3,
+        "text": "장점",
+        "anchor": "document-67"
+      },
+      {
+        "level": 3,
+        "text": "단점",
+        "anchor": "document-68"
+      },
+      {
+        "level": 2,
+        "text": "Real-Time Command",
+        "anchor": "real-time-command"
+      },
+      {
+        "level": 3,
+        "text": "장점",
+        "anchor": "document-69"
+      },
+      {
+        "level": 3,
+        "text": "단점",
+        "anchor": "document-70"
+      },
+      {
+        "level": 2,
+        "text": "현실",
+        "anchor": "document-71"
+      },
+      {
+        "level": 2,
+        "text": "추가 보안 계층",
+        "anchor": "document-72"
+      },
+      {
+        "level": 3,
+        "text": "① Command Authentication Field",
+        "anchor": "command-authentication-field"
+      },
+      {
+        "level": 3,
+        "text": "② Rolling Key ID",
+        "anchor": "rolling-key-id"
+      },
+      {
+        "level": 3,
+        "text": "③ Anti-Replay Counter",
+        "anchor": "anti-replay-counter"
+      },
+      {
+        "level": 3,
+        "text": "④ Dual-Authorization Flag",
+        "anchor": "dual-authorization-flag"
+      },
+      {
+        "level": 2,
+        "text": "암호화 구조",
+        "anchor": "document-73"
+      },
+      {
+        "level": 2,
+        "text": "목적",
+        "anchor": "document-74"
+      },
+      {
+        "level": 2,
+        "text": "예시 APID 구성 (지구관측 위성 가정)",
+        "anchor": "apid"
+      },
+      {
+        "level": 2,
+        "text": "촬영 시 실제 흐름",
+        "anchor": "document-75"
+      },
+      {
+        "level": 2,
+        "text": "Stored Sequence에서의 APID 처리",
+        "anchor": "stored-sequence-apid"
+      },
+      {
+        "level": 2,
+        "text": "일반적 구조",
+        "anchor": "document-76"
+      },
+      {
+        "level": 2,
+        "text": "Telecommand 처리 흐름",
+        "anchor": "telecommand"
+      },
+      {
+        "level": 2,
+        "text": "Task 간 통신",
+        "anchor": "task"
+      },
+      {
+        "level": 2,
+        "text": "우선순위",
+        "anchor": "document-77"
+      },
+      {
+        "level": 2,
+        "text": "Time-tag 처리 흐름",
+        "anchor": "time-tag"
+      },
+      {
+        "level": 2,
+        "text": "시간 기준",
+        "anchor": "document-78"
+      },
+      {
+        "level": 2,
+        "text": "정밀도",
+        "anchor": "document-79"
+      },
+      {
+        "level": 2,
+        "text": "문제 상황",
+        "anchor": "document-80"
+      },
+      {
+        "level": 2,
+        "text": "FDIR (Fault Detection, Isolation, Recovery)",
+        "anchor": "fdir-fault-detection-isolation-recovery"
+      },
+      {
+        "level": 3,
+        "text": "주요 감시 대상",
+        "anchor": "document-81"
+      },
+      {
+        "level": 2,
+        "text": "Fault 발생 시 처리 단계",
+        "anchor": "fault"
+      },
+      {
+        "level": 3,
+        "text": "1단계: 경고",
+        "anchor": "1-10"
+      },
+      {
+        "level": 3,
+        "text": "2단계: Abort",
+        "anchor": "2-abort"
+      },
+      {
+        "level": 3,
+        "text": "3단계: Safe Mode 진입",
+        "anchor": "3-safe-mode"
+      },
+      {
+        "level": 2,
+        "text": "Time-tag 명령 처리",
+        "anchor": "time-tag-2"
+      },
+      {
+        "level": 2,
+        "text": "예시",
+        "anchor": "document-82"
+      },
+      {
+        "level": 2,
+        "text": "문제 정의",
+        "anchor": "document-83"
+      },
+      {
+        "level": 2,
+        "text": "Saturation 위험",
+        "anchor": "saturation"
+      },
+      {
+        "level": 2,
+        "text": "해결 방법: Momentum Dumping",
+        "anchor": "momentum-dumping"
+      },
+      {
+        "level": 3,
+        "text": "(1) 자기토커(Magnetorquer) 사용 (LEO)",
+        "anchor": "1-magnetorquer-leo"
+      },
+      {
+        "level": 3,
+        "text": "(2) Thruster 사용 (고급 위성)",
+        "anchor": "2-thruster"
+      },
+      {
+        "level": 2,
+        "text": "운용 전략",
+        "anchor": "document-84"
+      },
+      {
+        "level": 2,
+        "text": "Level 0 - 완전 지상 제어",
+        "anchor": "level-0"
+      },
+      {
+        "level": 2,
+        "text": "Level 1 - 제한적 자율",
+        "anchor": "level-1"
+      },
+      {
+        "level": 2,
+        "text": "Level 2 - 임무 재계획 가능",
+        "anchor": "level-2"
+      },
+      {
+        "level": 2,
+        "text": "Level 3 - 고급 자율",
+        "anchor": "level-3"
+      },
+      {
+        "level": 2,
+        "text": "PUS 개념",
+        "anchor": "pus"
+      },
+      {
+        "level": 2,
+        "text": "주요 PUS 서비스 타입",
+        "anchor": "pus-2"
+      },
+      {
+        "level": 2,
+        "text": "ECSS (유럽 표준)",
+        "anchor": "ecss"
+      },
+      {
+        "level": 2,
+        "text": "단계",
+        "anchor": "document-85"
+      },
+      {
+        "level": 3,
+        "text": "(1) Unit Test",
+        "anchor": "1-unit-test"
+      },
+      {
+        "level": 3,
+        "text": "(2) Integration Test",
+        "anchor": "2-integration-test"
+      },
+      {
+        "level": 3,
+        "text": "(3) Hardware-in-the-Loop (HIL)",
+        "anchor": "3-hardware-in-the-loop-hil"
+      },
+      {
+        "level": 3,
+        "text": "(4) FlatSat Test",
+        "anchor": "4-flatsat-test"
+      },
+      {
+        "level": 3,
+        "text": "(5) Thermal Vacuum Test",
+        "anchor": "5-thermal-vacuum-test"
+      },
+      {
+        "level": 2,
+        "text": "독립 검증 (IV&V)",
+        "anchor": "iv-v"
+      },
+      {
+        "level": 2,
+        "text": "FDIR 검증",
+        "anchor": "fdir"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "modeling-erd",
+    "title": "Satellite Mission Platform ERD (Logical Model)",
+    "summary": "아래는 지금까지 설계한 **위성 운영/촬영계획 통합 ERD**를 기반으로 정리한 **Mermaid ER 다이어그램**입니다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/modeling-erd",
+    "updated_at": "2026-03-14T08:27:55Z",
+    "word_count": 1943,
+    "reading_minutes": 8,
+    "source_path": "guide/modeling-ERD.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1) Satellite Domain",
+        "anchor": "1-satellite-domain"
+      },
+      {
+        "level": 3,
+        "text": "SATELLITE",
+        "anchor": "satellite"
+      },
+      {
+        "level": 3,
+        "text": "SATELLITE_PROFILE_SET",
+        "anchor": "satellite-profile-set"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_PROFILE",
+        "anchor": "imaging-profile"
+      },
+      {
+        "level": 3,
+        "text": "COMM_PROFILE",
+        "anchor": "comm-profile"
+      },
+      {
+        "level": 3,
+        "text": "CONSTRAINT_PROFILE",
+        "anchor": "constraint-profile"
+      },
+      {
+        "level": 2,
+        "text": "2) Orbit Domain",
+        "anchor": "2-orbit-domain"
+      },
+      {
+        "level": 3,
+        "text": "TLE",
+        "anchor": "tle"
+      },
+      {
+        "level": 3,
+        "text": "VISIBILITY_PASS",
+        "anchor": "visibility-pass"
+      },
+      {
+        "level": 2,
+        "text": "3) Tasking Domain",
+        "anchor": "3-tasking-domain"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_REQUEST",
+        "anchor": "imaging-request"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_CANDIDATE",
+        "anchor": "imaging-candidate"
+      },
+      {
+        "level": 2,
+        "text": "4) Scheduling Domain",
+        "anchor": "4-scheduling-domain"
+      },
+      {
+        "level": 3,
+        "text": "SCHEDULE_RUN",
+        "anchor": "schedule-run"
+      },
+      {
+        "level": 3,
+        "text": "SCHEDULE_SLOT",
+        "anchor": "schedule-slot"
+      },
+      {
+        "level": 2,
+        "text": "5) Ground Domain",
+        "anchor": "5-ground-domain"
+      },
+      {
+        "level": 3,
+        "text": "GROUND_STATION",
+        "anchor": "ground-station"
+      },
+      {
+        "level": 3,
+        "text": "CONTACT_SESSION",
+        "anchor": "contact-session"
+      },
+      {
+        "level": 2,
+        "text": "6) Command Domain",
+        "anchor": "6-command-domain"
+      },
+      {
+        "level": 3,
+        "text": "COMMAND_REQUEST",
+        "anchor": "command-request"
+      },
+      {
+        "level": 3,
+        "text": "COMMAND_EXECUTION",
+        "anchor": "command-execution"
+      },
+      {
+        "level": 2,
+        "text": "7) Data Product Domain",
+        "anchor": "7-data-product-domain"
+      },
+      {
+        "level": 3,
+        "text": "DATA_PRODUCT",
+        "anchor": "data-product"
+      },
+      {
+        "level": 3,
+        "text": "DELIVERY_ORDER",
+        "anchor": "delivery-order"
+      },
+      {
+        "level": 2,
+        "text": "참고: 다음 단계에서 “반드시 추가되는” 테이블(권장)",
+        "anchor": "document"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "modeling-feasibility-v2",
+    "title": "2-1) Core Request / Context",
+    "summary": "아래는 **촬영계획시스템에서 “위성영상 촬영계획”에 대해 Feasibility(가능성) + Probability(성공확률/품질확률) + 타당성(업무적/정책적 적합성) 검토**를 수행하는 **업무 플로우를 직접 지원하는 ERD**입니다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/modeling-feasibility-v2",
+    "updated_at": "2026-03-13T16:22:53Z",
+    "word_count": 10230,
+    "reading_minutes": 41,
+    "source_path": "guide/modeling-feasibility-v2.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1) Feasibility/Probability/Validity Workflow ERD (Mermaid)",
+        "anchor": "1-feasibility-probability-validity-workflow-erd-mermaid"
+      },
+      {
+        "level": 2,
+        "text": "2) 전체 테이블 설명 표 (테이블명 / 엔터티 / 속성)",
+        "anchor": "2"
+      },
+      {
+        "level": 3,
+        "text": "TENANT",
+        "anchor": "tenant"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_REQUEST",
+        "anchor": "imaging-request"
+      },
+      {
+        "level": 3,
+        "text": "SATELLITE",
+        "anchor": "satellite"
+      },
+      {
+        "level": 3,
+        "text": "GROUND_STATION",
+        "anchor": "ground-station"
+      },
+      {
+        "level": 3,
+        "text": "VISIBILITY_PASS",
+        "anchor": "visibility-pass"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_RUN",
+        "anchor": "feasibility-run"
+      },
+      {
+        "level": 3,
+        "text": "ORBIT_SNAPSHOT",
+        "anchor": "orbit-snapshot"
+      },
+      {
+        "level": 3,
+        "text": "WEATHER_SNAPSHOT",
+        "anchor": "weather-snapshot"
+      },
+      {
+        "level": 3,
+        "text": "OP_CONSTRAINT_SNAPSHOT",
+        "anchor": "op-constraint-snapshot"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_CANDIDATE",
+        "anchor": "imaging-candidate"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_CRITERION",
+        "anchor": "feasibility-criterion"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_CHECK_RESULT",
+        "anchor": "feasibility-check-result"
+      },
+      {
+        "level": 3,
+        "text": "PROBABILITY_MODEL",
+        "anchor": "probability-model"
+      },
+      {
+        "level": 3,
+        "text": "PROBABILITY_ESTIMATE",
+        "anchor": "probability-estimate"
+      },
+      {
+        "level": 3,
+        "text": "CLOUD_COVER_ESTIMATE",
+        "anchor": "cloud-cover-estimate"
+      },
+      {
+        "level": 3,
+        "text": "REVIEW_TASK",
+        "anchor": "review-task"
+      },
+      {
+        "level": 3,
+        "text": "REVIEW_DECISION",
+        "anchor": "review-decision"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_REPORT",
+        "anchor": "feasibility-report"
+      },
+      {
+        "level": 3,
+        "text": "REPORT_ATTACHMENT",
+        "anchor": "report-attachment"
+      },
+      {
+        "level": 3,
+        "text": "AUDIT_LOG",
+        "anchor": "audit-log"
+      },
+      {
+        "level": 2,
+        "text": "3) 업무 플로우를 ERD에 매핑하면 이렇게 흘러갑니다",
+        "anchor": "3-erd"
+      },
+      {
+        "level": 2,
+        "text": "다음 확장(원하시면 즉시 반영 가능)",
+        "anchor": "document"
+      },
+      {
+        "level": 2,
+        "text": "1) 갱신 ERD (Mermaid)",
+        "anchor": "1-erd-mermaid"
+      },
+      {
+        "level": 2,
+        "text": "2) 전체 테이블 설명 표 (데이터 사전)",
+        "anchor": "2-2"
+      },
+      {
+        "level": 3,
+        "text": "TENANT",
+        "anchor": "tenant-2"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_REQUEST",
+        "anchor": "imaging-request-2"
+      },
+      {
+        "level": 3,
+        "text": "AOI_TILE",
+        "anchor": "aoi-tile"
+      },
+      {
+        "level": 3,
+        "text": "SATELLITE",
+        "anchor": "satellite-2"
+      },
+      {
+        "level": 3,
+        "text": "GROUND_STATION",
+        "anchor": "ground-station-2"
+      },
+      {
+        "level": 3,
+        "text": "VISIBILITY_PASS",
+        "anchor": "visibility-pass-2"
+      },
+      {
+        "level": 3,
+        "text": "SCHEDULE_SLOT",
+        "anchor": "schedule-slot"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_RUN",
+        "anchor": "feasibility-run-2"
+      },
+      {
+        "level": 3,
+        "text": "ORBIT_SNAPSHOT",
+        "anchor": "orbit-snapshot-2"
+      },
+      {
+        "level": 3,
+        "text": "WEATHER_SNAPSHOT",
+        "anchor": "weather-snapshot-2"
+      },
+      {
+        "level": 3,
+        "text": "OP_CONSTRAINT_SNAPSHOT",
+        "anchor": "op-constraint-snapshot-2"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_CANDIDATE",
+        "anchor": "imaging-candidate-2"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_CRITERION",
+        "anchor": "feasibility-criterion-2"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_CHECK_RESULT",
+        "anchor": "feasibility-check-result-2"
+      },
+      {
+        "level": 3,
+        "text": "CONFLICT_ANALYSIS",
+        "anchor": "conflict-analysis"
+      },
+      {
+        "level": 3,
+        "text": "CONFLICT_ITEM",
+        "anchor": "conflict-item"
+      },
+      {
+        "level": 3,
+        "text": "PROBABILITY_MODEL",
+        "anchor": "probability-model-2"
+      },
+      {
+        "level": 3,
+        "text": "PROBABILITY_ESTIMATE",
+        "anchor": "probability-estimate-2"
+      },
+      {
+        "level": 3,
+        "text": "MODEL_EVIDENCE_LINEAGE",
+        "anchor": "model-evidence-lineage"
+      },
+      {
+        "level": 3,
+        "text": "CLOUD_COVER_ESTIMATE",
+        "anchor": "cloud-cover-estimate-2"
+      },
+      {
+        "level": 3,
+        "text": "DOWNLINK_WINDOW_CANDIDATE",
+        "anchor": "downlink-window-candidate"
+      },
+      {
+        "level": 3,
+        "text": "DOWNLINK_FEASIBILITY",
+        "anchor": "downlink-feasibility"
+      },
+      {
+        "level": 3,
+        "text": "REVIEW_TASK",
+        "anchor": "review-task-2"
+      },
+      {
+        "level": 3,
+        "text": "REVIEW_DECISION",
+        "anchor": "review-decision-2"
+      },
+      {
+        "level": 3,
+        "text": "RISK_REGISTER",
+        "anchor": "risk-register"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_REPORT",
+        "anchor": "feasibility-report-2"
+      },
+      {
+        "level": 3,
+        "text": "REPORT_ATTACHMENT",
+        "anchor": "report-attachment-2"
+      },
+      {
+        "level": 3,
+        "text": "AUDIT_LOG",
+        "anchor": "audit-log-2"
+      },
+      {
+        "level": 2,
+        "text": "3) 이 갱신 모델이 지원하는 “업무 플로우” (요약)",
+        "anchor": "3"
+      },
+      {
+        "level": 2,
+        "text": "1.1 공통 필드 표준",
+        "anchor": "1-1"
+      },
+      {
+        "level": 2,
+        "text": "2.1 ORBIT / GEOMETRY 도메인 (공통)",
+        "anchor": "2-1-orbit-geometry"
+      },
+      {
+        "level": 2,
+        "text": "2.2 IMAGING / SENSOR 도메인",
+        "anchor": "2-2-imaging-sensor"
+      },
+      {
+        "level": 3,
+        "text": "(A) 광학(OPTICAL)",
+        "anchor": "a-optical"
+      },
+      {
+        "level": 3,
+        "text": "(B) SAR",
+        "anchor": "b-sar"
+      },
+      {
+        "level": 2,
+        "text": "2.3 ATTITUDE / MANEUVER 도메인(공통)",
+        "anchor": "2-3-attitude-maneuver"
+      },
+      {
+        "level": 2,
+        "text": "2.4 POWER / THERMAL 도메인(공통)",
+        "anchor": "2-4-power-thermal"
+      },
+      {
+        "level": 2,
+        "text": "2.5 COMM / GROUND / DOWNLINK 도메인(공통)",
+        "anchor": "2-5-comm-ground-downlink"
+      },
+      {
+        "level": 2,
+        "text": "2.6 SECURITY / POLICY / COMPLIANCE (공통)",
+        "anchor": "2-6-security-policy-compliance"
+      },
+      {
+        "level": 2,
+        "text": "2.7 CONFLICT (공통, 기존 스케줄과의 충돌)",
+        "anchor": "2-7-conflict"
+      },
+      {
+        "level": 2,
+        "text": "3.1 템플릿(일반형)",
+        "anchor": "3-1"
+      },
+      {
+        "level": 2,
+        "text": "3.2 권장 판정 규칙(대표 6개)",
+        "anchor": "3-2-6"
+      },
+      {
+        "level": 3,
+        "text": "ATT_MAX_OFF_NADIR (Hard)",
+        "anchor": "att-max-off-nadir-hard"
+      },
+      {
+        "level": 3,
+        "text": "OPT_MAX_CLOUD_PCT (정책형: Hard/Soft 가능)",
+        "anchor": "opt-max-cloud-pct-hard-soft"
+      },
+      {
+        "level": 3,
+        "text": "GND_DOWNLINK_WINDOW_EXISTS (Hard)",
+        "anchor": "gnd-downlink-window-exists-hard"
+      },
+      {
+        "level": 3,
+        "text": "DATA_LATENCY_SLA_OK (정책형)",
+        "anchor": "data-latency-sla-ok"
+      },
+      {
+        "level": 3,
+        "text": "SEC_GEO_FENCE_OK (Hard)",
+        "anchor": "sec-geo-fence-ok-hard"
+      },
+      {
+        "level": 3,
+        "text": "CON_TIME_OVERLAP_LOCKED (Hard)",
+        "anchor": "con-time-overlap-locked-hard"
+      },
+      {
+        "level": 2,
+        "text": "4.1 후보 단위 Feasibility 판정",
+        "anchor": "4-1-feasibility"
+      },
+      {
+        "level": 2,
+        "text": "4.2 후보 점수(score) 산정(권장)",
+        "anchor": "4-2-score"
+      },
+      {
+        "level": 2,
+        "text": "4.3 종합 확률(Overall Probability)",
+        "anchor": "4-3-overall-probability"
+      },
+      {
+        "level": 2,
+        "text": "4.4 후보 추천(Recommendation) 규칙",
+        "anchor": "4-4-recommendation"
+      },
+      {
+        "level": 2,
+        "text": "0) (권장) 정책 테이블 1개 추가: FEASIBILITY_POLICY",
+        "anchor": "0-1-feasibility-policy"
+      },
+      {
+        "level": 2,
+        "text": "1) SQL Seed — FEASIBILITY_CRITERION",
+        "anchor": "1-sql-seed-feasibility-criterion"
+      },
+      {
+        "level": 2,
+        "text": "2) SQL Seed — PROBABILITY_MODEL",
+        "anchor": "2-sql-seed-probability-model"
+      },
+      {
+        "level": 2,
+        "text": "3) (권장) SQL Seed — FEASIBILITY_POLICY (policy_version별 임계치/가중치/집계)",
+        "anchor": "3-sql-seed-feasibility-policy-policy-version"
+      },
+      {
+        "level": 3,
+        "text": "3.1 테이블(권장) 생성 예시",
+        "anchor": "3-1-2"
+      },
+      {
+        "level": 3,
+        "text": "3.2 정책 Seed: OPT_BASE_v1",
+        "anchor": "3-2-seed-opt-base-v1"
+      },
+      {
+        "level": 3,
+        "text": "3.3 정책 Seed: SAR_BASE_v1",
+        "anchor": "3-3-seed-sar-base-v1"
+      },
+      {
+        "level": 2,
+        "text": "4) Seed 보강: reason_code / target_metric 표준(운영 편의)",
+        "anchor": "4-seed-reason-code-target-metric"
+      },
+      {
+        "level": 3,
+        "text": "4.1 FEASIBILITY_CHECK_RESULT.reason_code 예시(표준)",
+        "anchor": "4-1-feasibility-check-result-reason-code"
+      },
+      {
+        "level": 3,
+        "text": "4.2 PROBABILITY_ESTIMATE.target_metric 표준",
+        "anchor": "4-2-probability-estimate-target-metric"
+      },
+      {
+        "level": 2,
+        "text": "5) 이 Seed로 “바로 돌아가는 최소 운영 루프”",
+        "anchor": "5-seed"
+      },
+      {
+        "level": 2,
+        "text": "1.1 FEASIBILITY_CRITERION.csv",
+        "anchor": "1-1-feasibility-criterion-csv"
+      },
+      {
+        "level": 2,
+        "text": "1.2 PROBABILITY_MODEL.csv",
+        "anchor": "1-2-probability-model-csv"
+      },
+      {
+        "level": 2,
+        "text": "1.3 FEASIBILITY_POLICY.csv (policy_version별 JSON은 별도 파일로도 관리 가능)",
+        "anchor": "1-3-feasibility-policy-csv-policy-version-json"
+      },
+      {
+        "level": 2,
+        "text": "2.1 공통 룰 DSL 포맷(권장)",
+        "anchor": "2-1-dsl"
+      },
+      {
+        "level": 2,
+        "text": "2.2 핵심 criterion별 구체 룰(바로 구현 가능)",
+        "anchor": "2-2-criterion"
+      },
+      {
+        "level": 3,
+        "text": "(1) ORB_PASS_EXISTS (Hard)",
+        "anchor": "1-orb-pass-exists-hard"
+      },
+      {
+        "level": 3,
+        "text": "(2) ATT_MAX_OFF_NADIR (Hard)",
+        "anchor": "2-att-max-off-nadir-hard"
+      },
+      {
+        "level": 3,
+        "text": "(3) ATT_SLEW_TIME_FEASIBLE (Hard)",
+        "anchor": "3-att-slew-time-feasible-hard"
+      },
+      {
+        "level": 3,
+        "text": "(4) GEO_SUN_ELEVATION (OPT Hard / SAR Soft or N/A)",
+        "anchor": "4-geo-sun-elevation-opt-hard-sar-soft-or-n-a"
+      },
+      {
+        "level": 3,
+        "text": "(5) OPT_MAX_CLOUD_PCT (정책형: 보수적 p90)",
+        "anchor": "5-opt-max-cloud-pct-p90"
+      },
+      {
+        "level": 3,
+        "text": "(6) OPT_GSD_MEETS_REQUIREMENT (Hard)",
+        "anchor": "6-opt-gsd-meets-requirement-hard"
+      },
+      {
+        "level": 3,
+        "text": "(7) GND_DOWNLINK_WINDOW_EXISTS (Hard)",
+        "anchor": "7-gnd-downlink-window-exists-hard"
+      },
+      {
+        "level": 3,
+        "text": "(8) DATA_LATENCY_SLA_OK (정책형 확률)",
+        "anchor": "8-data-latency-sla-ok"
+      },
+      {
+        "level": 3,
+        "text": "(9) SEC_GEO_FENCE_OK (Hard)",
+        "anchor": "9-sec-geo-fence-ok-hard"
+      },
+      {
+        "level": 3,
+        "text": "(10) CON_TIME_OVERLAP_LOCKED (Hard)",
+        "anchor": "10-con-time-overlap-locked-hard"
+      },
+      {
+        "level": 2,
+        "text": "3.1 후보 Feasibility 종합",
+        "anchor": "3-1-feasibility"
+      },
+      {
+        "level": 2,
+        "text": "3.2 후보 점수(가중합 + 충돌 페널티)",
+        "anchor": "3-2"
+      },
+      {
+        "level": 2,
+        "text": "3.3 overall_probability (정책 결합)",
+        "anchor": "3-3-overall-probability"
+      },
+      {
+        "level": 2,
+        "text": "3.1 공통(모든 FEASIBILITY_CHECK_RESULT.evidence_json에 포함 권장)",
+        "anchor": "3-1-feasibility-check-result-evidence-json"
+      },
+      {
+        "level": 2,
+        "text": "3.2 criterion별 evidence_json “필수 computed/thresholds” 표준",
+        "anchor": "3-2-criterion-evidence-json-computed-thresholds"
+      },
+      {
+        "level": 3,
+        "text": "ORB_PASS_EXISTS",
+        "anchor": "orb-pass-exists"
+      },
+      {
+        "level": 3,
+        "text": "GEO_AOI_COVERAGE",
+        "anchor": "geo-aoi-coverage"
+      },
+      {
+        "level": 3,
+        "text": "GEO_SUN_ELEVATION (OPT)",
+        "anchor": "geo-sun-elevation-opt"
+      },
+      {
+        "level": 3,
+        "text": "ATT_MAX_OFF_NADIR",
+        "anchor": "att-max-off-nadir"
+      },
+      {
+        "level": 3,
+        "text": "ATT_SLEW_TIME_FEASIBLE",
+        "anchor": "att-slew-time-feasible"
+      },
+      {
+        "level": 3,
+        "text": "OPT_MAX_CLOUD_PCT",
+        "anchor": "opt-max-cloud-pct"
+      },
+      {
+        "level": 3,
+        "text": "OPT_GSD_MEETS_REQUIREMENT",
+        "anchor": "opt-gsd-meets-requirement"
+      },
+      {
+        "level": 3,
+        "text": "SAR_MODE_AVAILABLE",
+        "anchor": "sar-mode-available"
+      },
+      {
+        "level": 3,
+        "text": "SAR_INC_ANGLE_RANGE",
+        "anchor": "sar-inc-angle-range"
+      },
+      {
+        "level": 3,
+        "text": "GND_DOWNLINK_WINDOW_EXISTS",
+        "anchor": "gnd-downlink-window-exists"
+      },
+      {
+        "level": 3,
+        "text": "DATA_LATENCY_SLA_OK",
+        "anchor": "data-latency-sla-ok-2"
+      },
+      {
+        "level": 3,
+        "text": "SEC_GEO_FENCE_OK",
+        "anchor": "sec-geo-fence-ok"
+      },
+      {
+        "level": 3,
+        "text": "CON_TIME_OVERLAP_LOCKED",
+        "anchor": "con-time-overlap-locked"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "0-integrated-erd",
+    "title": "통합 ERD v2",
+    "summary": "- [0. 통합 ERD](./0.integrated-ERD.md)",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/0-integrated-erd",
+    "updated_at": "2026-03-13T16:22:53Z",
+    "word_count": 6589,
+    "reading_minutes": 27,
+    "source_path": "guide/modeling/0.integrated-ERD.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "문서 목차",
+        "anchor": "document"
+      },
+      {
+        "level": 2,
+        "text": "통합 기준",
+        "anchor": "document-2"
+      },
+      {
+        "level": 2,
+        "text": "공통 핵심 엔터티",
+        "anchor": "document-3"
+      },
+      {
+        "level": 2,
+        "text": "업무 도메인 구분",
+        "anchor": "document-4"
+      },
+      {
+        "level": 2,
+        "text": "테이블-업무 도메인 매핑",
+        "anchor": "document-5"
+      },
+      {
+        "level": 2,
+        "text": "서브 도메인별 업무 설명",
+        "anchor": "document-6"
+      },
+      {
+        "level": 3,
+        "text": "1. 고객/계정 관리",
+        "anchor": "1"
+      },
+      {
+        "level": 3,
+        "text": "2. 위성/자산 관리",
+        "anchor": "2"
+      },
+      {
+        "level": 3,
+        "text": "3. 궤도/지상국 운영",
+        "anchor": "3"
+      },
+      {
+        "level": 3,
+        "text": "4. 촬영 요청 / Feasibility 평가",
+        "anchor": "4-feasibility"
+      },
+      {
+        "level": 3,
+        "text": "5. 스케줄링 / 실행 통제",
+        "anchor": "5"
+      },
+      {
+        "level": 3,
+        "text": "6. 데이터 상품 / 다운링크 / 전달",
+        "anchor": "6"
+      },
+      {
+        "level": 3,
+        "text": "7. 감사 / 추적",
+        "anchor": "7"
+      },
+      {
+        "level": 2,
+        "text": "도메인 그룹 뷰 (Mermaid)",
+        "anchor": "mermaid"
+      },
+      {
+        "level": 2,
+        "text": "상세 통합 ERD (Mermaid)",
+        "anchor": "erd-mermaid"
+      },
+      {
+        "level": 2,
+        "text": "해석 메모",
+        "anchor": "document-7"
+      },
+      {
+        "level": 2,
+        "text": "테이블 정의서",
+        "anchor": "document-8"
+      },
+      {
+        "level": 3,
+        "text": "1. 고객/계정 관리 Domain",
+        "anchor": "1-domain"
+      },
+      {
+        "level": 3,
+        "text": "2. 위성/자산 관리 Domain",
+        "anchor": "2-domain"
+      },
+      {
+        "level": 3,
+        "text": "3. 궤도/지상국 운영 Domain",
+        "anchor": "3-domain"
+      },
+      {
+        "level": 3,
+        "text": "4. 촬영 요청 / Feasibility 평가 Domain",
+        "anchor": "4-feasibility-domain"
+      },
+      {
+        "level": 3,
+        "text": "5. 스케줄링 / 실행 통제 Domain",
+        "anchor": "5-domain"
+      },
+      {
+        "level": 3,
+        "text": "6. 데이터 상품 / 다운링크 / 전달 Domain",
+        "anchor": "6-domain"
+      },
+      {
+        "level": 3,
+        "text": "7. 감사 / 추적 Domain",
+        "anchor": "7-domain"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "1-customer-account-domain",
+    "title": "1. 고객 계정 관리 ERD",
+    "summary": "고객/계정 관리는 멀티테넌트 시스템의 조직 경계, 고객 계정, 사용자 계정, 권한, API 인증을 관리하는 업무 도메인이다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/1-customer-account-domain",
+    "updated_at": "2026-03-13T16:22:53Z",
+    "word_count": 834,
+    "reading_minutes": 4,
+    "source_path": "guide/modeling/1.customer-account-domain.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "도메인 개요",
+        "anchor": "document"
+      },
+      {
+        "level": 2,
+        "text": "서브 도메인별 업무",
+        "anchor": "document-2"
+      },
+      {
+        "level": 2,
+        "text": "포함 테이블",
+        "anchor": "document-3"
+      },
+      {
+        "level": 2,
+        "text": "도메인 ERD (Mermaid)",
+        "anchor": "erd-mermaid"
+      },
+      {
+        "level": 2,
+        "text": "외부 연계",
+        "anchor": "document-4"
+      },
+      {
+        "level": 2,
+        "text": "테이블 정의서",
+        "anchor": "document-5"
+      },
+      {
+        "level": 3,
+        "text": "TENANT",
+        "anchor": "tenant"
+      },
+      {
+        "level": 3,
+        "text": "CUSTOMER",
+        "anchor": "customer"
+      },
+      {
+        "level": 3,
+        "text": "USER_ACCOUNT",
+        "anchor": "user-account"
+      },
+      {
+        "level": 3,
+        "text": "ROLE",
+        "anchor": "role"
+      },
+      {
+        "level": 3,
+        "text": "USER_ROLE",
+        "anchor": "user-role"
+      },
+      {
+        "level": 3,
+        "text": "API_KEY",
+        "anchor": "api-key"
+      },
+      {
+        "level": 2,
+        "text": "구현 권장사항",
+        "anchor": "document-6"
+      },
+      {
+        "level": 3,
+        "text": "TENANT",
+        "anchor": "tenant-2"
+      },
+      {
+        "level": 3,
+        "text": "CUSTOMER",
+        "anchor": "customer-2"
+      },
+      {
+        "level": 3,
+        "text": "USER_ACCOUNT",
+        "anchor": "user-account-2"
+      },
+      {
+        "level": 3,
+        "text": "ROLE",
+        "anchor": "role-2"
+      },
+      {
+        "level": 3,
+        "text": "USER_ROLE",
+        "anchor": "user-role-2"
+      },
+      {
+        "level": 3,
+        "text": "API_KEY",
+        "anchor": "api-key-2"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "2-satellite-asset-domain",
+    "title": "2. 위성 자산 관리 ERD",
+    "summary": "위성 자산 관리는 위성 마스터와 촬영, 통신, 운용 제약 프로파일을 관리하는 업무 도메인이다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/2-satellite-asset-domain",
+    "updated_at": "2026-03-13T16:22:53Z",
+    "word_count": 882,
+    "reading_minutes": 4,
+    "source_path": "guide/modeling/2.satellite-asset-domain.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "도메인 개요",
+        "anchor": "document"
+      },
+      {
+        "level": 2,
+        "text": "서브 도메인별 업무",
+        "anchor": "document-2"
+      },
+      {
+        "level": 2,
+        "text": "포함 테이블",
+        "anchor": "document-3"
+      },
+      {
+        "level": 2,
+        "text": "도메인 ERD (Mermaid)",
+        "anchor": "erd-mermaid"
+      },
+      {
+        "level": 2,
+        "text": "외부 연계",
+        "anchor": "document-4"
+      },
+      {
+        "level": 2,
+        "text": "테이블 정의서",
+        "anchor": "document-5"
+      },
+      {
+        "level": 3,
+        "text": "SATELLITE",
+        "anchor": "satellite"
+      },
+      {
+        "level": 3,
+        "text": "SATELLITE_PROFILE_SET",
+        "anchor": "satellite-profile-set"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_PROFILE",
+        "anchor": "imaging-profile"
+      },
+      {
+        "level": 3,
+        "text": "COMM_PROFILE",
+        "anchor": "comm-profile"
+      },
+      {
+        "level": 3,
+        "text": "CONSTRAINT_PROFILE",
+        "anchor": "constraint-profile"
+      },
+      {
+        "level": 2,
+        "text": "구현 권장사항",
+        "anchor": "document-6"
+      },
+      {
+        "level": 3,
+        "text": "SATELLITE",
+        "anchor": "satellite-2"
+      },
+      {
+        "level": 3,
+        "text": "SATELLITE_PROFILE_SET",
+        "anchor": "satellite-profile-set-2"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_PROFILE",
+        "anchor": "imaging-profile-2"
+      },
+      {
+        "level": 3,
+        "text": "COMM_PROFILE",
+        "anchor": "comm-profile-2"
+      },
+      {
+        "level": 3,
+        "text": "CONSTRAINT_PROFILE",
+        "anchor": "constraint-profile-2"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "3-orbit-ground-domain",
+    "title": "3. 궤도 지상국 운영 ERD",
+    "summary": "궤도/지상국 운영은 위성 궤도 입력, 가시 패스 계산, 지상국 자원, 접촉 세션을 관리하는 업무 도메인이다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/3-orbit-ground-domain",
+    "updated_at": "2026-03-13T16:22:53Z",
+    "word_count": 939,
+    "reading_minutes": 4,
+    "source_path": "guide/modeling/3.orbit-ground-domain.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "도메인 개요",
+        "anchor": "document"
+      },
+      {
+        "level": 2,
+        "text": "서브 도메인별 업무",
+        "anchor": "document-2"
+      },
+      {
+        "level": 2,
+        "text": "포함 테이블",
+        "anchor": "document-3"
+      },
+      {
+        "level": 2,
+        "text": "도메인 ERD (Mermaid)",
+        "anchor": "erd-mermaid"
+      },
+      {
+        "level": 2,
+        "text": "외부 연계",
+        "anchor": "document-4"
+      },
+      {
+        "level": 2,
+        "text": "테이블 정의서",
+        "anchor": "document-5"
+      },
+      {
+        "level": 3,
+        "text": "ORBIT_SOURCE",
+        "anchor": "orbit-source"
+      },
+      {
+        "level": 3,
+        "text": "TLE",
+        "anchor": "tle"
+      },
+      {
+        "level": 3,
+        "text": "GROUND_STATION",
+        "anchor": "ground-station"
+      },
+      {
+        "level": 3,
+        "text": "VISIBILITY_PASS",
+        "anchor": "visibility-pass"
+      },
+      {
+        "level": 3,
+        "text": "ANTENNA_RESOURCE",
+        "anchor": "antenna-resource"
+      },
+      {
+        "level": 3,
+        "text": "CONTACT_SESSION",
+        "anchor": "contact-session"
+      },
+      {
+        "level": 2,
+        "text": "구현 권장사항",
+        "anchor": "document-6"
+      },
+      {
+        "level": 3,
+        "text": "ORBIT_SOURCE",
+        "anchor": "orbit-source-2"
+      },
+      {
+        "level": 3,
+        "text": "TLE",
+        "anchor": "tle-2"
+      },
+      {
+        "level": 3,
+        "text": "GROUND_STATION",
+        "anchor": "ground-station-2"
+      },
+      {
+        "level": 3,
+        "text": "VISIBILITY_PASS",
+        "anchor": "visibility-pass-2"
+      },
+      {
+        "level": 3,
+        "text": "ANTENNA_RESOURCE",
+        "anchor": "antenna-resource-2"
+      },
+      {
+        "level": 3,
+        "text": "CONTACT_SESSION",
+        "anchor": "contact-session-2"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "4-tasking-feasibility-domain",
+    "title": "4. 촬영 요청 Feasibility 평가 ERD",
+    "summary": "촬영 요청/Feasibility 평가는 고객 요청 접수부터 가능성 평가, 확률 추정, 사람 리뷰, 리스크 관리, 보고서 생성까지의 업무 도메인이다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/4-tasking-feasibility-domain",
+    "updated_at": "2026-03-13T16:22:53Z",
+    "word_count": 3805,
+    "reading_minutes": 16,
+    "source_path": "guide/modeling/4.tasking-feasibility-domain.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "도메인 개요",
+        "anchor": "document"
+      },
+      {
+        "level": 2,
+        "text": "서브 도메인별 업무",
+        "anchor": "document-2"
+      },
+      {
+        "level": 2,
+        "text": "포함 테이블",
+        "anchor": "document-3"
+      },
+      {
+        "level": 2,
+        "text": "도메인 ERD (Mermaid)",
+        "anchor": "erd-mermaid"
+      },
+      {
+        "level": 2,
+        "text": "외부 연계",
+        "anchor": "document-4"
+      },
+      {
+        "level": 2,
+        "text": "테이블 정의서",
+        "anchor": "document-5"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_REQUEST",
+        "anchor": "imaging-request"
+      },
+      {
+        "level": 3,
+        "text": "AOI_TILE",
+        "anchor": "aoi-tile"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_RUN",
+        "anchor": "feasibility-run"
+      },
+      {
+        "level": 3,
+        "text": "ORBIT_SNAPSHOT",
+        "anchor": "orbit-snapshot"
+      },
+      {
+        "level": 3,
+        "text": "WEATHER_SNAPSHOT",
+        "anchor": "weather-snapshot"
+      },
+      {
+        "level": 3,
+        "text": "OP_CONSTRAINT_SNAPSHOT",
+        "anchor": "op-constraint-snapshot"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_CANDIDATE",
+        "anchor": "imaging-candidate"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_CRITERION",
+        "anchor": "feasibility-criterion"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_CHECK_RESULT",
+        "anchor": "feasibility-check-result"
+      },
+      {
+        "level": 3,
+        "text": "CONFLICT_ANALYSIS",
+        "anchor": "conflict-analysis"
+      },
+      {
+        "level": 3,
+        "text": "CONFLICT_ITEM",
+        "anchor": "conflict-item"
+      },
+      {
+        "level": 3,
+        "text": "PROBABILITY_MODEL",
+        "anchor": "probability-model"
+      },
+      {
+        "level": 3,
+        "text": "PROBABILITY_ESTIMATE",
+        "anchor": "probability-estimate"
+      },
+      {
+        "level": 3,
+        "text": "MODEL_EVIDENCE_LINEAGE",
+        "anchor": "model-evidence-lineage"
+      },
+      {
+        "level": 3,
+        "text": "CLOUD_COVER_ESTIMATE",
+        "anchor": "cloud-cover-estimate"
+      },
+      {
+        "level": 3,
+        "text": "DOWNLINK_WINDOW_CANDIDATE",
+        "anchor": "downlink-window-candidate"
+      },
+      {
+        "level": 3,
+        "text": "DOWNLINK_FEASIBILITY",
+        "anchor": "downlink-feasibility"
+      },
+      {
+        "level": 3,
+        "text": "REVIEW_TASK",
+        "anchor": "review-task"
+      },
+      {
+        "level": 3,
+        "text": "REVIEW_DECISION",
+        "anchor": "review-decision"
+      },
+      {
+        "level": 3,
+        "text": "RISK_REGISTER",
+        "anchor": "risk-register"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_REPORT",
+        "anchor": "feasibility-report"
+      },
+      {
+        "level": 3,
+        "text": "REPORT_ATTACHMENT",
+        "anchor": "report-attachment"
+      },
+      {
+        "level": 2,
+        "text": "구현 권장사항",
+        "anchor": "document-6"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_REQUEST",
+        "anchor": "imaging-request-2"
+      },
+      {
+        "level": 3,
+        "text": "AOI_TILE",
+        "anchor": "aoi-tile-2"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_RUN",
+        "anchor": "feasibility-run-2"
+      },
+      {
+        "level": 3,
+        "text": "ORBIT_SNAPSHOT",
+        "anchor": "orbit-snapshot-2"
+      },
+      {
+        "level": 3,
+        "text": "WEATHER_SNAPSHOT",
+        "anchor": "weather-snapshot-2"
+      },
+      {
+        "level": 3,
+        "text": "OP_CONSTRAINT_SNAPSHOT",
+        "anchor": "op-constraint-snapshot-2"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_CANDIDATE",
+        "anchor": "imaging-candidate-2"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_CRITERION",
+        "anchor": "feasibility-criterion-2"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_CHECK_RESULT",
+        "anchor": "feasibility-check-result-2"
+      },
+      {
+        "level": 3,
+        "text": "CONFLICT_ANALYSIS",
+        "anchor": "conflict-analysis-2"
+      },
+      {
+        "level": 3,
+        "text": "CONFLICT_ITEM",
+        "anchor": "conflict-item-2"
+      },
+      {
+        "level": 3,
+        "text": "PROBABILITY_MODEL",
+        "anchor": "probability-model-2"
+      },
+      {
+        "level": 3,
+        "text": "PROBABILITY_ESTIMATE",
+        "anchor": "probability-estimate-2"
+      },
+      {
+        "level": 3,
+        "text": "MODEL_EVIDENCE_LINEAGE",
+        "anchor": "model-evidence-lineage-2"
+      },
+      {
+        "level": 3,
+        "text": "CLOUD_COVER_ESTIMATE",
+        "anchor": "cloud-cover-estimate-2"
+      },
+      {
+        "level": 3,
+        "text": "DOWNLINK_WINDOW_CANDIDATE",
+        "anchor": "downlink-window-candidate-2"
+      },
+      {
+        "level": 3,
+        "text": "DOWNLINK_FEASIBILITY",
+        "anchor": "downlink-feasibility-2"
+      },
+      {
+        "level": 3,
+        "text": "REVIEW_TASK",
+        "anchor": "review-task-2"
+      },
+      {
+        "level": 3,
+        "text": "REVIEW_DECISION",
+        "anchor": "review-decision-2"
+      },
+      {
+        "level": 3,
+        "text": "RISK_REGISTER",
+        "anchor": "risk-register-2"
+      },
+      {
+        "level": 3,
+        "text": "FEASIBILITY_REPORT",
+        "anchor": "feasibility-report-2"
+      },
+      {
+        "level": 3,
+        "text": "REPORT_ATTACHMENT",
+        "anchor": "report-attachment-2"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "5-scheduling-execution-domain",
+    "title": "5. 스케줄링 실행 통제 ERD",
+    "summary": "스케줄링/실행 통제는 촬영 후보를 실제 운용 일정으로 배치하고, 명령 요청과 실행을 통제하는 업무 도메인이다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/5-scheduling-execution-domain",
+    "updated_at": "2026-03-13T16:22:53Z",
+    "word_count": 1196,
+    "reading_minutes": 5,
+    "source_path": "guide/modeling/5.scheduling-execution-domain.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "도메인 개요",
+        "anchor": "document"
+      },
+      {
+        "level": 2,
+        "text": "서브 도메인별 업무",
+        "anchor": "document-2"
+      },
+      {
+        "level": 2,
+        "text": "포함 테이블",
+        "anchor": "document-3"
+      },
+      {
+        "level": 2,
+        "text": "도메인 ERD (Mermaid)",
+        "anchor": "erd-mermaid"
+      },
+      {
+        "level": 2,
+        "text": "외부 연계",
+        "anchor": "document-4"
+      },
+      {
+        "level": 2,
+        "text": "테이블 정의서",
+        "anchor": "document-5"
+      },
+      {
+        "level": 3,
+        "text": "SCHEDULE_RUN",
+        "anchor": "schedule-run"
+      },
+      {
+        "level": 3,
+        "text": "SCHEDULE_SLOT",
+        "anchor": "schedule-slot"
+      },
+      {
+        "level": 3,
+        "text": "SCHEDULE_SLOT_HISTORY",
+        "anchor": "schedule-slot-history"
+      },
+      {
+        "level": 3,
+        "text": "COMMAND_DICTIONARY",
+        "anchor": "command-dictionary"
+      },
+      {
+        "level": 3,
+        "text": "COMMAND_REQUEST",
+        "anchor": "command-request"
+      },
+      {
+        "level": 3,
+        "text": "COMMAND_EXECUTION",
+        "anchor": "command-execution"
+      },
+      {
+        "level": 2,
+        "text": "구현 권장사항",
+        "anchor": "document-6"
+      },
+      {
+        "level": 3,
+        "text": "SCHEDULE_RUN",
+        "anchor": "schedule-run-2"
+      },
+      {
+        "level": 3,
+        "text": "SCHEDULE_SLOT",
+        "anchor": "schedule-slot-2"
+      },
+      {
+        "level": 3,
+        "text": "SCHEDULE_SLOT_HISTORY",
+        "anchor": "schedule-slot-history-2"
+      },
+      {
+        "level": 3,
+        "text": "COMMAND_DICTIONARY",
+        "anchor": "command-dictionary-2"
+      },
+      {
+        "level": 3,
+        "text": "COMMAND_REQUEST",
+        "anchor": "command-request-2"
+      },
+      {
+        "level": 3,
+        "text": "COMMAND_EXECUTION",
+        "anchor": "command-execution-2"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "6-product-downlink-delivery-domain",
+    "title": "6. 데이터 상품 다운링크 전달 ERD",
+    "summary": "데이터 상품/다운링크/전달은 실제 촬영 결과물의 생성, 다운링크 계획, 처리, 카탈로그 등록, 전달, 과금을 담당하는 업무 도메인이다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/6-product-downlink-delivery-domain",
+    "updated_at": "2026-03-13T16:22:53Z",
+    "word_count": 1448,
+    "reading_minutes": 6,
+    "source_path": "guide/modeling/6.product-downlink-delivery-domain.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "도메인 개요",
+        "anchor": "document"
+      },
+      {
+        "level": 2,
+        "text": "서브 도메인별 업무",
+        "anchor": "document-2"
+      },
+      {
+        "level": 2,
+        "text": "포함 테이블",
+        "anchor": "document-3"
+      },
+      {
+        "level": 2,
+        "text": "도메인 ERD (Mermaid)",
+        "anchor": "erd-mermaid"
+      },
+      {
+        "level": 2,
+        "text": "외부 연계",
+        "anchor": "document-4"
+      },
+      {
+        "level": 2,
+        "text": "테이블 정의서",
+        "anchor": "document-5"
+      },
+      {
+        "level": 3,
+        "text": "DOWNLINK_REQUEST",
+        "anchor": "downlink-request"
+      },
+      {
+        "level": 3,
+        "text": "DOWNLINK_PLAN",
+        "anchor": "downlink-plan"
+      },
+      {
+        "level": 3,
+        "text": "DATA_PRODUCT",
+        "anchor": "data-product"
+      },
+      {
+        "level": 3,
+        "text": "PRODUCT_DERIVATION",
+        "anchor": "product-derivation"
+      },
+      {
+        "level": 3,
+        "text": "PROCESS_JOB",
+        "anchor": "process-job"
+      },
+      {
+        "level": 3,
+        "text": "CATALOG_ITEM",
+        "anchor": "catalog-item"
+      },
+      {
+        "level": 3,
+        "text": "DELIVERY_ORDER",
+        "anchor": "delivery-order"
+      },
+      {
+        "level": 3,
+        "text": "BILLING_RECORD",
+        "anchor": "billing-record"
+      },
+      {
+        "level": 2,
+        "text": "구현 권장사항",
+        "anchor": "document-6"
+      },
+      {
+        "level": 3,
+        "text": "DOWNLINK_REQUEST",
+        "anchor": "downlink-request-2"
+      },
+      {
+        "level": 3,
+        "text": "DOWNLINK_PLAN",
+        "anchor": "downlink-plan-2"
+      },
+      {
+        "level": 3,
+        "text": "DATA_PRODUCT",
+        "anchor": "data-product-2"
+      },
+      {
+        "level": 3,
+        "text": "PRODUCT_DERIVATION",
+        "anchor": "product-derivation-2"
+      },
+      {
+        "level": 3,
+        "text": "PROCESS_JOB",
+        "anchor": "process-job-2"
+      },
+      {
+        "level": 3,
+        "text": "CATALOG_ITEM",
+        "anchor": "catalog-item-2"
+      },
+      {
+        "level": 3,
+        "text": "DELIVERY_ORDER",
+        "anchor": "delivery-order-2"
+      },
+      {
+        "level": 3,
+        "text": "BILLING_RECORD",
+        "anchor": "billing-record-2"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "7-audit-trace-domain",
+    "title": "7. 감사 추적 ERD",
+    "summary": "감사/추적은 요청, 평가, 실행, 상품, 과금 등 전 도메인의 주요 행위를 추적하고 규제 및 분쟁 대응 근거를 제공하는 공통 업무 도메인이다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/7-audit-trace-domain",
+    "updated_at": "2026-03-13T16:22:53Z",
+    "word_count": 285,
+    "reading_minutes": 2,
+    "source_path": "guide/modeling/7.audit-trace-domain.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "도메인 개요",
+        "anchor": "document"
+      },
+      {
+        "level": 2,
+        "text": "서브 도메인별 업무",
+        "anchor": "document-2"
+      },
+      {
+        "level": 2,
+        "text": "포함 테이블",
+        "anchor": "document-3"
+      },
+      {
+        "level": 2,
+        "text": "도메인 차트 (Mermaid)",
+        "anchor": "mermaid"
+      },
+      {
+        "level": 2,
+        "text": "테이블 정의서",
+        "anchor": "document-4"
+      },
+      {
+        "level": 3,
+        "text": "AUDIT_LOG",
+        "anchor": "audit-log"
+      },
+      {
+        "level": 2,
+        "text": "구현 권장사항",
+        "anchor": "document-5"
+      },
+      {
+        "level": 3,
+        "text": "AUDIT_LOG",
+        "anchor": "audit-log-2"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "modleing-erd-v2",
+    "title": "2-1) Identity / Tenant Domain",
+    "summary": "아래는 기존 ERD를 **실제 구축/운영에 필요한 테이블까지 포함해서 개선한 버전**입니다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/modleing-erd-v2",
+    "updated_at": "2026-03-13T16:22:53Z",
+    "word_count": 2965,
+    "reading_minutes": 12,
+    "source_path": "guide/modleing-ERD-v2.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1) 개선 ERD (Mermaid)",
+        "anchor": "1-erd-mermaid"
+      },
+      {
+        "level": 2,
+        "text": "2) 전체 테이블 설명 표 (데이터 사전)",
+        "anchor": "2"
+      },
+      {
+        "level": 3,
+        "text": "TENANT",
+        "anchor": "tenant"
+      },
+      {
+        "level": 3,
+        "text": "CUSTOMER",
+        "anchor": "customer"
+      },
+      {
+        "level": 3,
+        "text": "USER_ACCOUNT",
+        "anchor": "user-account"
+      },
+      {
+        "level": 3,
+        "text": "ROLE",
+        "anchor": "role"
+      },
+      {
+        "level": 3,
+        "text": "USER_ROLE",
+        "anchor": "user-role"
+      },
+      {
+        "level": 3,
+        "text": "API_KEY",
+        "anchor": "api-key"
+      },
+      {
+        "level": 3,
+        "text": "SATELLITE",
+        "anchor": "satellite"
+      },
+      {
+        "level": 3,
+        "text": "SATELLITE_PROFILE_SET",
+        "anchor": "satellite-profile-set"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_PROFILE",
+        "anchor": "imaging-profile"
+      },
+      {
+        "level": 3,
+        "text": "COMM_PROFILE",
+        "anchor": "comm-profile"
+      },
+      {
+        "level": 3,
+        "text": "CONSTRAINT_PROFILE",
+        "anchor": "constraint-profile"
+      },
+      {
+        "level": 3,
+        "text": "ORBIT_SOURCE",
+        "anchor": "orbit-source"
+      },
+      {
+        "level": 3,
+        "text": "TLE",
+        "anchor": "tle"
+      },
+      {
+        "level": 3,
+        "text": "VISIBILITY_PASS",
+        "anchor": "visibility-pass"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_REQUEST",
+        "anchor": "imaging-request"
+      },
+      {
+        "level": 3,
+        "text": "IMAGING_CANDIDATE",
+        "anchor": "imaging-candidate"
+      },
+      {
+        "level": 3,
+        "text": "SCHEDULE_RUN",
+        "anchor": "schedule-run"
+      },
+      {
+        "level": 3,
+        "text": "SCHEDULE_SLOT",
+        "anchor": "schedule-slot"
+      },
+      {
+        "level": 3,
+        "text": "SCHEDULE_SLOT_HISTORY",
+        "anchor": "schedule-slot-history"
+      },
+      {
+        "level": 3,
+        "text": "GROUND_STATION",
+        "anchor": "ground-station"
+      },
+      {
+        "level": 3,
+        "text": "ANTENNA_RESOURCE",
+        "anchor": "antenna-resource"
+      },
+      {
+        "level": 3,
+        "text": "CONTACT_SESSION",
+        "anchor": "contact-session"
+      },
+      {
+        "level": 3,
+        "text": "COMMAND_DICTIONARY",
+        "anchor": "command-dictionary"
+      },
+      {
+        "level": 3,
+        "text": "COMMAND_REQUEST",
+        "anchor": "command-request"
+      },
+      {
+        "level": 3,
+        "text": "COMMAND_EXECUTION",
+        "anchor": "command-execution"
+      },
+      {
+        "level": 3,
+        "text": "DOWNLINK_REQUEST",
+        "anchor": "downlink-request"
+      },
+      {
+        "level": 3,
+        "text": "DOWNLINK_PLAN",
+        "anchor": "downlink-plan"
+      },
+      {
+        "level": 3,
+        "text": "DATA_PRODUCT",
+        "anchor": "data-product"
+      },
+      {
+        "level": 3,
+        "text": "PRODUCT_DERIVATION",
+        "anchor": "product-derivation"
+      },
+      {
+        "level": 3,
+        "text": "PROCESS_JOB",
+        "anchor": "process-job"
+      },
+      {
+        "level": 3,
+        "text": "CATALOG_ITEM",
+        "anchor": "catalog-item"
+      },
+      {
+        "level": 3,
+        "text": "DELIVERY_ORDER",
+        "anchor": "delivery-order"
+      },
+      {
+        "level": 3,
+        "text": "BILLING_RECORD",
+        "anchor": "billing-record"
+      },
+      {
+        "level": 3,
+        "text": "AUDIT_LOG",
+        "anchor": "audit-log"
+      },
+      {
+        "level": 2,
+        "text": "다음 단계(원하시면 바로 생성)",
+        "anchor": "document"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "readme",
+    "title": "SATTIE Guide",
+    "summary": "`/guide` 엔드포인트 테스트용 기본 문서입니다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/readme",
+    "updated_at": "2026-03-07T00:26:51Z",
+    "word_count": 20,
+    "reading_minutes": 1,
+    "source_path": "guide/README.md",
+    "is_public": true,
+    "headings": [],
+    "order": 0
+  },
+  {
+    "slug": "satellite-imagery-data-levels-l0-to-l4",
+    "title": "전체 개념 한 줄 요약",
+    "summary": "**L0 ~ L4 위성영상 Level**을 “기술적으로 정확하지만 이해하기 쉽게” 단계별로 설명!",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/satellite-imagery-data-levels-l0-to-l4",
+    "updated_at": "2026-03-05T15:17:12Z",
+    "word_count": 505,
+    "reading_minutes": 3,
+    "source_path": "guide/satellite-imagery-data-levels-l0-to-l4.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "무엇인가?",
+        "anchor": "document"
+      },
+      {
+        "level": 2,
+        "text": "특징",
+        "anchor": "document-2"
+      },
+      {
+        "level": 2,
+        "text": "비유",
+        "anchor": "document-3"
+      },
+      {
+        "level": 2,
+        "text": "누가 쓰나?",
+        "anchor": "document-4"
+      },
+      {
+        "level": 2,
+        "text": "Level 1A",
+        "anchor": "level-1a"
+      },
+      {
+        "level": 3,
+        "text": "수행 작업",
+        "anchor": "document-5"
+      },
+      {
+        "level": 3,
+        "text": "아직 남아있는 문제",
+        "anchor": "document-6"
+      },
+      {
+        "level": 2,
+        "text": "Level 1B",
+        "anchor": "level-1b"
+      },
+      {
+        "level": 3,
+        "text": "추가 처리",
+        "anchor": "document-7"
+      },
+      {
+        "level": 2,
+        "text": "결과",
+        "anchor": "document-8"
+      },
+      {
+        "level": 2,
+        "text": "비유",
+        "anchor": "document-9"
+      },
+      {
+        "level": 2,
+        "text": "왜 필요?",
+        "anchor": "document-10"
+      },
+      {
+        "level": 2,
+        "text": "수행 작업",
+        "anchor": "document-11"
+      },
+      {
+        "level": 2,
+        "text": "결과",
+        "anchor": "document-12"
+      },
+      {
+        "level": 2,
+        "text": "비유",
+        "anchor": "document-13"
+      },
+      {
+        "level": 2,
+        "text": "수행 작업",
+        "anchor": "document-14"
+      },
+      {
+        "level": 2,
+        "text": "결과",
+        "anchor": "document-15"
+      },
+      {
+        "level": 2,
+        "text": "예",
+        "anchor": "document-16"
+      },
+      {
+        "level": 2,
+        "text": "예시",
+        "anchor": "document-17"
+      },
+      {
+        "level": 2,
+        "text": "특징",
+        "anchor": "document-18"
+      },
+      {
+        "level": 2,
+        "text": "L1 / L2 상용 배포 포맷",
+        "anchor": "l1-l2"
+      },
+      {
+        "level": 2,
+        "text": "L3 지도 서비스용 포맷",
+        "anchor": "l3"
+      },
+      {
+        "level": 2,
+        "text": "JPEG",
+        "anchor": "jpeg"
+      },
+      {
+        "level": 2,
+        "text": "GeoTIFF",
+        "anchor": "geotiff"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "satellite-imagery-transmission-and-processing-flow",
+    "title": "satellite imagery transmission and processing flow",
+    "summary": "<br><br>",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/satellite-imagery-transmission-and-processing-flow",
+    "updated_at": "2026-03-05T14:59:52Z",
+    "word_count": 1650,
+    "reading_minutes": 7,
+    "source_path": "guide/satellite-imagery-transmission-and-processing-flow.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1. 위성 탑재체 내부 (On-Board Segment)",
+        "anchor": "1-on-board-segment"
+      },
+      {
+        "level": 2,
+        "text": "1.1. 영상 획득 (Image Acquisition)",
+        "anchor": "1-1-image-acquisition"
+      },
+      {
+        "level": 2,
+        "text": "1.2. 아날로그 → 디지털 변환 (A/D Conversion)",
+        "anchor": "1-2-a-d-conversion"
+      },
+      {
+        "level": 2,
+        "text": "1.3. 온보드 영상 처리 (선택적)",
+        "anchor": "1-3"
+      },
+      {
+        "level": 2,
+        "text": "1.4. 패킷화 (CCSDS Packetization)",
+        "anchor": "1-4-ccsds-packetization"
+      },
+      {
+        "level": 3,
+        "text": "1.4.1. Source Packet",
+        "anchor": "1-4-1-source-packet"
+      },
+      {
+        "level": 3,
+        "text": "1.4.2. TM Transfer Frame",
+        "anchor": "1-4-2-tm-transfer-frame"
+      },
+      {
+        "level": 3,
+        "text": "1.4.3. CADU (Channel Access Data Unit)",
+        "anchor": "1-4-3-cadu-channel-access-data-unit"
+      },
+      {
+        "level": 2,
+        "text": "2. 위성 → 지상 전송 (Space Link)",
+        "anchor": "2-space-link"
+      },
+      {
+        "level": 2,
+        "text": "2.1. 채널 코딩 & 변조",
+        "anchor": "2-1"
+      },
+      {
+        "level": 2,
+        "text": "2.2. RF Downlink",
+        "anchor": "2-2-rf-downlink"
+      },
+      {
+        "level": 2,
+        "text": "3. 지상국 수신 (Ground Station Front-End)",
+        "anchor": "3-ground-station-front-end"
+      },
+      {
+        "level": 2,
+        "text": "3.1. RF 수신",
+        "anchor": "3-1-rf"
+      },
+      {
+        "level": 2,
+        "text": "3.2. 채널 복호 (Channel Decoding)",
+        "anchor": "3-2-channel-decoding"
+      },
+      {
+        "level": 2,
+        "text": "4. 지상 데이터 처리 (Ground Data Processing)",
+        "anchor": "4-ground-data-processing"
+      },
+      {
+        "level": 2,
+        "text": "4.1. 프레임 동기 및 CADU 분해",
+        "anchor": "4-1-cadu"
+      },
+      {
+        "level": 2,
+        "text": "4.2. 영상 데이터 재조립",
+        "anchor": "4-2"
+      },
+      {
+        "level": 2,
+        "text": "4.3. 압축 해제 (필요 시)",
+        "anchor": "4-3"
+      },
+      {
+        "level": 2,
+        "text": "5. 영상 처리 (Level 0 → Level 1 → Level 2)",
+        "anchor": "5-level-0-level-1-level-2"
+      },
+      {
+        "level": 2,
+        "text": "5.1. Level 0 (Raw)",
+        "anchor": "5-1-level-0-raw"
+      },
+      {
+        "level": 2,
+        "text": "5.2. Level 1 (Radiometric / Geometric Correction)",
+        "anchor": "5-2-level-1-radiometric-geometric-correction"
+      },
+      {
+        "level": 3,
+        "text": "5.2.1. 수행 작업:",
+        "anchor": "5-2-1"
+      },
+      {
+        "level": 2,
+        "text": "5.3. Level 2 (정사보정)",
+        "anchor": "5-3-level-2"
+      },
+      {
+        "level": 2,
+        "text": "6. 최종 이미지 파일 생성",
+        "anchor": "6"
+      },
+      {
+        "level": 2,
+        "text": "7. 전체 흐름 요약 다이어그램",
+        "anchor": "7"
+      },
+      {
+        "level": 2,
+        "text": "8. 핵심 포인트 정리",
+        "anchor": "8"
+      },
+      {
+        "level": 2,
+        "text": "1. CCSDS 계층 구조 상세 설명",
+        "anchor": "1-ccsds"
+      },
+      {
+        "level": 2,
+        "text": "1.1. Physical Layer",
+        "anchor": "1-1-physical-layer"
+      },
+      {
+        "level": 2,
+        "text": "1.2. Channel Coding Layer",
+        "anchor": "1-2-channel-coding-layer"
+      },
+      {
+        "level": 2,
+        "text": "1.3. Synchronization & Channel Coding Sublayer",
+        "anchor": "1-3-synchronization-channel-coding-sublayer"
+      },
+      {
+        "level": 3,
+        "text": "1.3.1. CADU 구조:",
+        "anchor": "1-3-1-cadu"
+      },
+      {
+        "level": 2,
+        "text": "1.4. Data Link Layer",
+        "anchor": "1-4-data-link-layer"
+      },
+      {
+        "level": 3,
+        "text": "1.4.1. TM Transfer Frame",
+        "anchor": "1-4-1-tm-transfer-frame"
+      },
+      {
+        "level": 2,
+        "text": "1.5. Space Packet Layer",
+        "anchor": "1-5-space-packet-layer"
+      },
+      {
+        "level": 3,
+        "text": "1.5.1. Source Packet",
+        "anchor": "1-5-1-source-packet"
+      },
+      {
+        "level": 2,
+        "text": "1.6. Application Layer",
+        "anchor": "1-6-application-layer"
+      },
+      {
+        "level": 3,
+        "text": "1.6.1. 계층 흐름 요약",
+        "anchor": "1-6-1"
+      },
+      {
+        "level": 2,
+        "text": "2. 위성 영상 Level 정의 (0 ~ 4)",
+        "anchor": "2-level-0-4"
+      },
+      {
+        "level": 2,
+        "text": "2.1. Level 0 (Raw Data)",
+        "anchor": "2-1-level-0-raw-data"
+      },
+      {
+        "level": 2,
+        "text": "2.2. Level 1A",
+        "anchor": "2-2-level-1a"
+      },
+      {
+        "level": 2,
+        "text": "2.3. Level 1B",
+        "anchor": "2-3-level-1b"
+      },
+      {
+        "level": 2,
+        "text": "2.4. Level 2 (Ortho)",
+        "anchor": "2-4-level-2-ortho"
+      },
+      {
+        "level": 2,
+        "text": "2.5. Level 3 / 4 (고급 산출물)",
+        "anchor": "2-5-level-3-4"
+      },
+      {
+        "level": 2,
+        "text": "3. LEO 실시간 수신 vs 저장 후 다운로드 차이",
+        "anchor": "3-leo-vs"
+      },
+      {
+        "level": 2,
+        "text": "3.1. 실시간 Direct Downlink",
+        "anchor": "3-1-direct-downlink"
+      },
+      {
+        "level": 3,
+        "text": "3.1.1. 특징:",
+        "anchor": "3-1-1"
+      },
+      {
+        "level": 3,
+        "text": "3.1.2. 장점:",
+        "anchor": "3-1-2"
+      },
+      {
+        "level": 3,
+        "text": "3.1.3. 단점:",
+        "anchor": "3-1-3"
+      },
+      {
+        "level": 2,
+        "text": "3.2. On-board Recording 후 Dump",
+        "anchor": "3-2-on-board-recording-dump"
+      },
+      {
+        "level": 3,
+        "text": "3.2.1. 특징:",
+        "anchor": "3-2-1"
+      },
+      {
+        "level": 3,
+        "text": "3.2.2. 장점:",
+        "anchor": "3-2-2"
+      },
+      {
+        "level": 3,
+        "text": "3.2.3. 단점:",
+        "anchor": "3-2-3"
+      },
+      {
+        "level": 2,
+        "text": "3.3. 비교",
+        "anchor": "3-3"
+      },
+      {
+        "level": 2,
+        "text": "4. 영상 데이터 레이트 계산 예시",
+        "anchor": "4"
+      },
+      {
+        "level": 2,
+        "text": "4.1. 가정",
+        "anchor": "4-1"
+      },
+      {
+        "level": 2,
+        "text": "4.2. 한 라인 픽셀 수",
+        "anchor": "4-2-2"
+      },
+      {
+        "level": 2,
+        "text": "4.3. 1 line 데이터량",
+        "anchor": "4-3-1-line"
+      },
+      {
+        "level": 2,
+        "text": "4.4. 초당 데이터율",
+        "anchor": "4-4"
+      },
+      {
+        "level": 2,
+        "text": "4.5. 압축 적용 (예: 4:1)",
+        "anchor": "4-5-4-1"
+      },
+      {
+        "level": 2,
+        "text": "4.6. 채널 코딩 오버헤드 (약 20%)",
+        "anchor": "4-6-20"
+      },
+      {
+        "level": 2,
+        "text": "5. 최종 핵심 정리",
+        "anchor": "5"
+      },
+      {
+        "level": 2,
+        "text": "1. X-band 링크 예산 (Link Budget) 계산 개요",
+        "anchor": "1-x-band-link-budget"
+      },
+      {
+        "level": 2,
+        "text": "1.1. 기본 방정식",
+        "anchor": "1-1"
+      },
+      {
+        "level": 2,
+        "text": "1.2. 주요 항목",
+        "anchor": "1-2"
+      },
+      {
+        "level": 3,
+        "text": "1.2.1. 송신 전력 (P_t)",
+        "anchor": "1-2-1-p-t"
+      },
+      {
+        "level": 3,
+        "text": "1.2.2. 송신 안테나 이득 (G_t)",
+        "anchor": "1-2-2-g-t"
+      },
+      {
+        "level": 3,
+        "text": "1.2.3. 경로 손실 (L_s) (Free Space Path Loss)",
+        "anchor": "1-2-3-l-s-free-space-path-loss"
+      },
+      {
+        "level": 3,
+        "text": "1.2.4. 수신 안테나 이득 (G_r)",
+        "anchor": "1-2-4-g-r"
+      },
+      {
+        "level": 2,
+        "text": "1.3. 수신 전력 계산 예시",
+        "anchor": "1-3-2"
+      },
+      {
+        "level": 2,
+        "text": "1.4. Noise Power",
+        "anchor": "1-4-noise-power"
+      },
+      {
+        "level": 2,
+        "text": "1.5. SNR",
+        "anchor": "1-5-snr"
+      },
+      {
+        "level": 3,
+        "text": "1.5.1. 목표",
+        "anchor": "1-5-1"
+      },
+      {
+        "level": 2,
+        "text": "2. LDPC 적용 시 Eb/N0 요구치",
+        "anchor": "2-ldpc-eb-n0"
+      },
+      {
+        "level": 2,
+        "text": "2.1. Eb/N0 정의",
+        "anchor": "2-1-eb-n0"
+      },
+      {
+        "level": 2,
+        "text": "2.2. 변조별 요구 Eb/N0 (대략값)",
+        "anchor": "2-2-eb-n0"
+      },
+      {
+        "level": 2,
+        "text": "2.3. 왜 LDPC가 중요한가?",
+        "anchor": "2-3-ldpc"
+      },
+      {
+        "level": 2,
+        "text": "2.4. 시스템 설계 흐름",
+        "anchor": "2-4"
+      },
+      {
+        "level": 2,
+        "text": "3. SSR (Solid State Recorder) 용량 산정",
+        "anchor": "3-ssr-solid-state-recorder"
+      },
+      {
+        "level": 2,
+        "text": "3.1. 기본 공식",
+        "anchor": "3-1"
+      },
+      {
+        "level": 2,
+        "text": "3.2. 예시",
+        "anchor": "3-2"
+      },
+      {
+        "level": 2,
+        "text": "3.3. 하루 촬영 5회라면?",
+        "anchor": "3-3-5"
+      },
+      {
+        "level": 2,
+        "text": "3.4. 실제 설계 시 고려사항",
+        "anchor": "3-4"
+      },
+      {
+        "level": 2,
+        "text": "3.5. 설계 조건",
+        "anchor": "3-5"
+      },
+      {
+        "level": 2,
+        "text": "4. 상용 위성 사례 비교",
+        "anchor": "4-2"
+      },
+      {
+        "level": 2,
+        "text": "4.1. PlanetScope",
+        "anchor": "4-1-planetscope"
+      },
+      {
+        "level": 2,
+        "text": "4.2. WorldView-3",
+        "anchor": "4-2-worldview-3"
+      },
+      {
+        "level": 2,
+        "text": "4.3. ICEYE (SAR)",
+        "anchor": "4-3-iceye-sar"
+      },
+      {
+        "level": 2,
+        "text": "4.4. 최신 추세",
+        "anchor": "4-4-2"
+      },
+      {
+        "level": 2,
+        "text": "5. 종합 구조",
+        "anchor": "5-2"
+      },
+      {
+        "level": 2,
+        "text": "6. 핵심 요약",
+        "anchor": "6-2"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "satellite-operations-platform-domain-model",
+    "title": "1. 최상위 엔터티 구조",
+    "summary": "아래는 **기지국 기반 위성제어 시스템 + 촬영계획시스템 연계 + 위성정보 관리 + 부가서비스 확장**을 전제로 한",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/satellite-operations-platform-domain-model",
+    "updated_at": "2026-03-14T08:30:01Z",
+    "word_count": 10308,
+    "reading_minutes": 42,
+    "source_path": "guide/satellite-operations-platform-domain-model.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 3,
+        "text": "기본 식별자",
+        "anchor": "document"
+      },
+      {
+        "level": 3,
+        "text": "분류 정보",
+        "anchor": "document-2"
+      },
+      {
+        "level": 3,
+        "text": "센서 유형",
+        "anchor": "document-3"
+      },
+      {
+        "level": 3,
+        "text": "영상 성능",
+        "anchor": "document-4"
+      },
+      {
+        "level": 3,
+        "text": "링크 정보",
+        "anchor": "document-5"
+      },
+      {
+        "level": 3,
+        "text": "지상국 연동",
+        "anchor": "document-6"
+      },
+      {
+        "level": 3,
+        "text": "1. Satellite Master",
+        "anchor": "1-satellite-master"
+      },
+      {
+        "level": 3,
+        "text": "2. Satellite Capability",
+        "anchor": "2-satellite-capability"
+      },
+      {
+        "level": 3,
+        "text": "3. Satellite Telemetry",
+        "anchor": "3-satellite-telemetry"
+      },
+      {
+        "level": 3,
+        "text": "4. Satellite Mission",
+        "anchor": "4-satellite-mission"
+      },
+      {
+        "level": 3,
+        "text": "5. Imaging Task",
+        "anchor": "5-imaging-task"
+      },
+      {
+        "level": 3,
+        "text": "6. Data Product",
+        "anchor": "6-data-product"
+      },
+      {
+        "level": 3,
+        "text": "7. Ground Contact Session",
+        "anchor": "7-ground-contact-session"
+      },
+      {
+        "level": 3,
+        "text": "촬영계획시스템과 연동 시",
+        "anchor": "document-7"
+      },
+      {
+        "level": 3,
+        "text": "기지국 제어 연동 시",
+        "anchor": "document-8"
+      },
+      {
+        "level": 2,
+        "text": "1) ERD 수준 논리 데이터 모델 설계",
+        "anchor": "1-erd"
+      },
+      {
+        "level": 3,
+        "text": "1.1 도메인 경계(핵심 엔터티 그룹)",
+        "anchor": "1-1"
+      },
+      {
+        "level": 3,
+        "text": "1.2 핵심 엔터티와 관계(요약 ERD)",
+        "anchor": "1-2-erd"
+      },
+      {
+        "level": 3,
+        "text": "1.3 물리 설계로 넘어가기 전 “필수 규칙”",
+        "anchor": "1-3"
+      },
+      {
+        "level": 2,
+        "text": "2) 마이크로서비스 분리 구조 설계",
+        "anchor": "2"
+      },
+      {
+        "level": 3,
+        "text": "2.1 서비스 경계 원칙",
+        "anchor": "2-1"
+      },
+      {
+        "level": 3,
+        "text": "2.2 권장 마이크로서비스(권장 10~12개)",
+        "anchor": "2-2-10-12"
+      },
+      {
+        "level": 3,
+        "text": "2.3 데이터 소유권(중요)",
+        "anchor": "2-3"
+      },
+      {
+        "level": 3,
+        "text": "2.4 동기 vs 비동기",
+        "anchor": "2-4-vs"
+      },
+      {
+        "level": 2,
+        "text": "3) 위성운영 통합 플랫폼 아키텍처 제안",
+        "anchor": "3"
+      },
+      {
+        "level": 3,
+        "text": "3.1 레이어드 아키텍처(권장)",
+        "anchor": "3-1"
+      },
+      {
+        "level": 3,
+        "text": "3.2 “연동”의 실제 형태(어댑터 패턴)",
+        "anchor": "3-2"
+      },
+      {
+        "level": 3,
+        "text": "3.3 이벤트 스트리밍 중심(운영에 필수)",
+        "anchor": "3-3"
+      },
+      {
+        "level": 3,
+        "text": "3.4 저장소 전략(현실적인 조합)",
+        "anchor": "3-4"
+      },
+      {
+        "level": 3,
+        "text": "3.5 운영/감사/보안(실무 핵심)",
+        "anchor": "3-5"
+      },
+      {
+        "level": 2,
+        "text": "4) 촬영계획 최적화 알고리즘 구조 설계",
+        "anchor": "4"
+      },
+      {
+        "level": 3,
+        "text": "4.1 문제 정의(수학적 모델의 골격)",
+        "anchor": "4-1"
+      },
+      {
+        "level": 3,
+        "text": "4.2 파이프라인(권장 5단계)",
+        "anchor": "4-2-5"
+      },
+      {
+        "level": 3,
+        "text": "4.3 필수 제약 목록(운영에서 실제로 터지는 것들)",
+        "anchor": "4-3"
+      },
+      {
+        "level": 3,
+        "text": "4.4 데이터 구조(알고리즘 구현을 위한 내부 모델)",
+        "anchor": "4-4"
+      },
+      {
+        "level": 2,
+        "text": "마무리: 실무적으로 “가장 먼저” 결정해야 하는 5가지",
+        "anchor": "5"
+      },
+      {
+        "level": 2,
+        "text": "1) ERD 논리 모델 상세(필드/키/인덱스/정규화 규칙)",
+        "anchor": "1-erd-2"
+      },
+      {
+        "level": 3,
+        "text": "1.1 공통 규칙(데이터 모델링 원칙)",
+        "anchor": "1-1-2"
+      },
+      {
+        "level": 3,
+        "text": "1.2 핵심 테이블 상세 스펙(대표 엔터티)",
+        "anchor": "1-2"
+      },
+      {
+        "level": 3,
+        "text": "1.3 ERD에서 자주 놓치는 “현실 필드”",
+        "anchor": "1-3-erd"
+      },
+      {
+        "level": 2,
+        "text": "2) 마이크로서비스 상세(API 계약, 이벤트 토픽, 데이터 소유권)",
+        "anchor": "2-api"
+      },
+      {
+        "level": 3,
+        "text": "2.1 서비스별 “소유 DB”와 책임",
+        "anchor": "2-1-db"
+      },
+      {
+        "level": 3,
+        "text": "2.2 대표 REST API(현업 수준 스펙)",
+        "anchor": "2-2-rest-api"
+      },
+      {
+        "level": 3,
+        "text": "2.3 이벤트 토픽 설계(운영+확장 핵심)",
+        "anchor": "2-3-2"
+      },
+      {
+        "level": 3,
+        "text": "2.4 SAGA 패턴(촬영요청→상품)",
+        "anchor": "2-4-saga"
+      },
+      {
+        "level": 2,
+        "text": "3) 통합 플랫폼 아키텍처 “시퀀스”와 운영 시나리오",
+        "anchor": "3-2"
+      },
+      {
+        "level": 3,
+        "text": "3.1 시나리오 A: 일반 촬영(계획→실행→상품)",
+        "anchor": "3-1-a"
+      },
+      {
+        "level": 3,
+        "text": "3.2 시나리오 B: 긴급 촬영(기존 스케줄 영향 최소화)",
+        "anchor": "3-2-b"
+      },
+      {
+        "level": 3,
+        "text": "3.3 보안/권한(특히 TT&C)",
+        "anchor": "3-3-tt-c"
+      },
+      {
+        "level": 2,
+        "text": "4) 촬영계획 최적화: 수식 템플릿 + 휴리스틱/CP-SAT 하이브리드",
+        "anchor": "4-cp-sat"
+      },
+      {
+        "level": 3,
+        "text": "4.1 결정변수",
+        "anchor": "4-1-2"
+      },
+      {
+        "level": 3,
+        "text": "4.2 목적함수(예시)",
+        "anchor": "4-2"
+      },
+      {
+        "level": 3,
+        "text": "4.3 핵심 제약(대표)",
+        "anchor": "4-3-2"
+      },
+      {
+        "level": 3,
+        "text": "4.4 운영용 하이브리드 전략(추천)",
+        "anchor": "4-4-2"
+      },
+      {
+        "level": 3,
+        "text": "4.5 “품질 피드백”을 통한 스코어 튜닝(고급)",
+        "anchor": "4-5"
+      },
+      {
+        "level": 2,
+        "text": "3-1) 시퀀스 다이어그램: 일반 촬영 (Request → Plan → Schedule → Command → Downlink → Product → Delivery)",
+        "anchor": "3-1-request-plan-schedule-command-downlink-product-delivery"
+      },
+      {
+        "level": 3,
+        "text": "설계 포인트(현업에서 중요한 것만)",
+        "anchor": "document-9"
+      },
+      {
+        "level": 2,
+        "text": "3-2) 시퀀스 다이어그램: 긴급 촬영 삽입 (Freeze Window + Impacted Replan + Minimum Perturbation)",
+        "anchor": "3-2-freeze-window-impacted-replan-minimum-perturbation"
+      },
+      {
+        "level": 3,
+        "text": "설계 포인트",
+        "anchor": "document-10"
+      },
+      {
+        "level": 2,
+        "text": "3-3) 실패 시나리오(다운링크 실패) — 운영에서 정말 자주 터지는 케이스",
+        "anchor": "3-3-2"
+      },
+      {
+        "level": 3,
+        "text": "설계 포인트",
+        "anchor": "document-11"
+      },
+      {
+        "level": 2,
+        "text": "A) ImagingRequest 상태 모델",
+        "anchor": "a-imagingrequest"
+      },
+      {
+        "level": 3,
+        "text": "A.1 상태 목록",
+        "anchor": "a-1"
+      },
+      {
+        "level": 3,
+        "text": "A.2 핵심 전이(트리거 이벤트)",
+        "anchor": "a-2"
+      },
+      {
+        "level": 3,
+        "text": "A.3 reason_code 표준(필수)",
+        "anchor": "a-3-reason-code"
+      },
+      {
+        "level": 2,
+        "text": "B) ScheduleRun / ScheduleSlot 상태 모델",
+        "anchor": "b-schedulerun-scheduleslot"
+      },
+      {
+        "level": 3,
+        "text": "B.1 ScheduleRun (스케줄 계산 실행 단위)",
+        "anchor": "b-1-schedulerun"
+      },
+      {
+        "level": 3,
+        "text": "B.2 ScheduleSlot (시간축 예약 핵심)",
+        "anchor": "b-2-scheduleslot"
+      },
+      {
+        "level": 2,
+        "text": "C) CommandRequest / CommandExecution 상태 모델(TT&C)",
+        "anchor": "c-commandrequest-commandexecution-tt-c"
+      },
+      {
+        "level": 3,
+        "text": "C.1 CommandRequest",
+        "anchor": "c-1-commandrequest"
+      },
+      {
+        "level": 3,
+        "text": "C.2 CommandExecution (세션 단위 실행 기록)",
+        "anchor": "c-2-commandexecution"
+      },
+      {
+        "level": 2,
+        "text": "D) DataProduct / Delivery 상태 모델",
+        "anchor": "d-dataproduct-delivery"
+      },
+      {
+        "level": 3,
+        "text": "D.1 DataProduct",
+        "anchor": "d-1-dataproduct"
+      },
+      {
+        "level": 3,
+        "text": "D.2 DeliveryOrder",
+        "anchor": "d-2-deliveryorder"
+      },
+      {
+        "level": 2,
+        "text": "2.1 이벤트 설계 원칙(운영 필수 규칙)",
+        "anchor": "2-1-2"
+      },
+      {
+        "level": 2,
+        "text": "2.2 토픽 목록(권장 표준)",
+        "anchor": "2-2"
+      },
+      {
+        "level": 3,
+        "text": "Tasking",
+        "anchor": "tasking"
+      },
+      {
+        "level": 3,
+        "text": "Orbit/Prediction",
+        "anchor": "orbit-prediction"
+      },
+      {
+        "level": 3,
+        "text": "Scheduling",
+        "anchor": "scheduling"
+      },
+      {
+        "level": 3,
+        "text": "Ground",
+        "anchor": "ground"
+      },
+      {
+        "level": 3,
+        "text": "Commanding",
+        "anchor": "commanding"
+      },
+      {
+        "level": 3,
+        "text": "Data Ingest/Processing/Catalog",
+        "anchor": "data-ingest-processing-catalog"
+      },
+      {
+        "level": 3,
+        "text": "Delivery/Billing",
+        "anchor": "delivery-billing"
+      },
+      {
+        "level": 2,
+        "text": "2.3 공통 이벤트 Envelope(JSON) — “반드시 통일”",
+        "anchor": "2-3-envelope-json"
+      },
+      {
+        "level": 2,
+        "text": "2.4 핵심 이벤트별 Payload 스키마(실무 템플릿)",
+        "anchor": "2-4-payload"
+      },
+      {
+        "level": 3,
+        "text": "(1) tasking.request.submitted",
+        "anchor": "1-tasking-request-submitted"
+      },
+      {
+        "level": 3,
+        "text": "(2) orbit.passes.ready",
+        "anchor": "2-orbit-passes-ready"
+      },
+      {
+        "level": 3,
+        "text": "(3) scheduling.schedule.proposed / committed",
+        "anchor": "3-scheduling-schedule-proposed-committed"
+      },
+      {
+        "level": 3,
+        "text": "(4) command.sent / acknowledged",
+        "anchor": "4-command-sent-acknowledged"
+      },
+      {
+        "level": 3,
+        "text": "(5) product.available",
+        "anchor": "5-product-available"
+      },
+      {
+        "level": 2,
+        "text": "2.5 이벤트 거버넌스(팀 운영 규칙)",
+        "anchor": "2-5"
+      },
+      {
+        "level": 2,
+        "text": "1-A) ImagingRequest 전이 표",
+        "anchor": "1-a-imagingrequest"
+      },
+      {
+        "level": 3,
+        "text": "A.1 정상 플로우(End-to-End)",
+        "anchor": "a-1-end-to-end"
+      },
+      {
+        "level": 3,
+        "text": "A.2 실패/복구 플로우(현업 필수)",
+        "anchor": "a-2-2"
+      },
+      {
+        "level": 2,
+        "text": "1-B) ScheduleRun 전이 표",
+        "anchor": "1-b-schedulerun"
+      },
+      {
+        "level": 2,
+        "text": "1-C) ScheduleSlot 전이 표(핵심: 시간축 예약)",
+        "anchor": "1-c-scheduleslot"
+      },
+      {
+        "level": 2,
+        "text": "1-D) CommandRequest / CommandExecution 전이 표",
+        "anchor": "1-d-commandrequest-commandexecution"
+      },
+      {
+        "level": 3,
+        "text": "CommandRequest",
+        "anchor": "commandrequest"
+      },
+      {
+        "level": 3,
+        "text": "CommandExecution",
+        "anchor": "commandexecution"
+      },
+      {
+        "level": 2,
+        "text": "1-E) DataProduct / DeliveryOrder 전이 표",
+        "anchor": "1-e-dataproduct-deliveryorder"
+      },
+      {
+        "level": 3,
+        "text": "DataProduct",
+        "anchor": "dataproduct"
+      },
+      {
+        "level": 3,
+        "text": "DeliveryOrder",
+        "anchor": "deliveryorder"
+      },
+      {
+        "level": 2,
+        "text": "2.1 Tasking 도메인",
+        "anchor": "2-1-tasking"
+      },
+      {
+        "level": 3,
+        "text": "tasking.request.submitted",
+        "anchor": "tasking-request-submitted"
+      },
+      {
+        "level": 3,
+        "text": "tasking.request.validated / rejected",
+        "anchor": "tasking-request-validated-rejected"
+      },
+      {
+        "level": 2,
+        "text": "2.2 Orbit/Prediction 도메인",
+        "anchor": "2-2-orbit-prediction"
+      },
+      {
+        "level": 3,
+        "text": "orbit.passes.ready",
+        "anchor": "orbit-passes-ready"
+      },
+      {
+        "level": 3,
+        "text": "orbit.passes.invalidated",
+        "anchor": "orbit-passes-invalidated"
+      },
+      {
+        "level": 2,
+        "text": "2.3 Scheduling 도메인",
+        "anchor": "2-3-scheduling"
+      },
+      {
+        "level": 3,
+        "text": "scheduling.candidate.generated",
+        "anchor": "scheduling-candidate-generated"
+      },
+      {
+        "level": 3,
+        "text": "scheduling.schedule.proposed",
+        "anchor": "scheduling-schedule-proposed"
+      },
+      {
+        "level": 3,
+        "text": "scheduling.schedule.committed",
+        "anchor": "scheduling-schedule-committed"
+      },
+      {
+        "level": 2,
+        "text": "2.4 Ground 도메인",
+        "anchor": "2-4-ground"
+      },
+      {
+        "level": 3,
+        "text": "ground.session.reserved",
+        "anchor": "ground-session-reserved"
+      },
+      {
+        "level": 3,
+        "text": "ground.session.started / completed / failed",
+        "anchor": "ground-session-started-completed-failed"
+      },
+      {
+        "level": 2,
+        "text": "2.5 Commanding 도메인",
+        "anchor": "2-5-commanding"
+      },
+      {
+        "level": 3,
+        "text": "command.plan.prepared",
+        "anchor": "command-plan-prepared"
+      },
+      {
+        "level": 3,
+        "text": "command.sent / acknowledged / failed",
+        "anchor": "command-sent-acknowledged-failed"
+      },
+      {
+        "level": 2,
+        "text": "2.6 Product/Processing/Catalog 도메인",
+        "anchor": "2-6-product-processing-catalog"
+      },
+      {
+        "level": 3,
+        "text": "product.raw.ingested / product.ingest.failed",
+        "anchor": "product-raw-ingested-product-ingest-failed"
+      },
+      {
+        "level": 3,
+        "text": "product.available",
+        "anchor": "product-available"
+      },
+      {
+        "level": 3,
+        "text": "delivery.completed / failed",
+        "anchor": "delivery-completed-failed"
+      },
+      {
+        "level": 2,
+        "text": "다음으로(선택 없이도 이어갈 수 있는 실무 산출물)",
+        "anchor": "document-12"
+      },
+      {
+        "level": 2,
+        "text": "3.1 핵심 원칙(운영 안정성과 성능을 좌우)",
+        "anchor": "3-1-2"
+      },
+      {
+        "level": 2,
+        "text": "3.2 도메인별 저장소 권장안(“어느 DB에 무엇을 둘지”)",
+        "anchor": "3-2-db"
+      },
+      {
+        "level": 3,
+        "text": "(A) 관계형(PostgreSQL/PostGIS): 트랜잭션/조인/제약이 중요한 영역",
+        "anchor": "a-postgresql-postgis"
+      },
+      {
+        "level": 3,
+        "text": "(B) 시계열(TimescaleDB/Influx): 텔레메트리",
+        "anchor": "b-timescaledb-influx"
+      },
+      {
+        "level": 3,
+        "text": "(C) 오브젝트 스토리지(S3): 페이로드 파일",
+        "anchor": "c-s3"
+      },
+      {
+        "level": 3,
+        "text": "(D) 검색(OpenSearch/Elastic): 카탈로그 검색 가속",
+        "anchor": "d-opensearch-elastic"
+      },
+      {
+        "level": 2,
+        "text": "3.3 테이블별 “반드시 필요한” 제약과 인덱스",
+        "anchor": "3-3-3"
+      },
+      {
+        "level": 3,
+        "text": "3.3.1 SCHEDULE_SLOT: 겹침 금지(가장 중요)",
+        "anchor": "3-3-1-schedule-slot"
+      },
+      {
+        "level": 3,
+        "text": "3.3.2 IMAGING_REQUEST: 공간/시간 질의 최적화",
+        "anchor": "3-3-2-imaging-request"
+      },
+      {
+        "level": 3,
+        "text": "3.3.3 VISIBILITY_PASS: 패스 캐시 테이블(대량 + 시간범위 조회)",
+        "anchor": "3-3-3-visibility-pass"
+      },
+      {
+        "level": 3,
+        "text": "3.3.4 COMMAND_REQUEST / COMMAND_EXECUTION: 감사추적/조회 최적화",
+        "anchor": "3-3-4-command-request-command-execution"
+      },
+      {
+        "level": 3,
+        "text": "3.3.5 DATA_PRODUCT: 카탈로그/검색을 위한 공간+시간 인덱스",
+        "anchor": "3-3-5-data-product"
+      },
+      {
+        "level": 2,
+        "text": "3.4 파티셔닝/아카이빙(대량 데이터 대응)",
+        "anchor": "3-4-2"
+      },
+      {
+        "level": 3,
+        "text": "3.4.1 TELEMETRY_POINT: Timescale HyperTable 권장",
+        "anchor": "3-4-1-telemetry-point-timescale-hypertable"
+      },
+      {
+        "level": 3,
+        "text": "3.4.2 VISIBILITY_PASS 파티셔닝(선택)",
+        "anchor": "3-4-2-visibility-pass"
+      },
+      {
+        "level": 3,
+        "text": "3.4.3 이벤트 로그(감사로그) 아카이빙",
+        "anchor": "3-4-3"
+      },
+      {
+        "level": 2,
+        "text": "3.5 멀티테넌시(tenant) 모델 선택과 인덱스",
+        "anchor": "3-5-tenant"
+      },
+      {
+        "level": 3,
+        "text": "옵션 1) Shared DB + tenant_id 컬럼(권장 기본)",
+        "anchor": "1-shared-db-tenant-id"
+      },
+      {
+        "level": 3,
+        "text": "옵션 2) Schema-per-tenant",
+        "anchor": "2-schema-per-tenant"
+      },
+      {
+        "level": 2,
+        "text": "3.6 참조 무결성(FK) 전략(현실적인 타협)",
+        "anchor": "3-6-fk"
+      },
+      {
+        "level": 2,
+        "text": "3.7 “실제로 장애를 막는” 추가 제약 8개",
+        "anchor": "3-7-8"
+      },
+      {
+        "level": 2,
+        "text": "4.1 표기 규칙",
+        "anchor": "4-1-3"
+      },
+      {
+        "level": 2,
+        "text": "4.2 E2E “촬영요청→상품전달” 계약 표(핵심 플로우)",
+        "anchor": "4-2-e2e"
+      },
+      {
+        "level": 3,
+        "text": "(1) 고객이 촬영 요청을 접수한다",
+        "anchor": "1"
+      },
+      {
+        "level": 3,
+        "text": "(2) 요청을 검증하고 통과/거절을 확정한다",
+        "anchor": "2-2"
+      },
+      {
+        "level": 3,
+        "text": "(3) 궤도/패스를 계산하고 후보 패스 캐시를 만든다",
+        "anchor": "3-3"
+      },
+      {
+        "level": 3,
+        "text": "(4) 후보(촬영 가능 윈도/모드)를 생성한다",
+        "anchor": "4-2"
+      },
+      {
+        "level": 3,
+        "text": "(5) 스케줄을 산출(제안)하고 커밋한다",
+        "anchor": "5-2"
+      },
+      {
+        "level": 3,
+        "text": "(6) 지상국 세션을 예약하고 명령 계획을 생성한다",
+        "anchor": "6"
+      },
+      {
+        "level": 3,
+        "text": "(7) 세션 시작 시 TT&C 수행(업링크/다운링크)",
+        "anchor": "7-tt-c"
+      },
+      {
+        "level": 3,
+        "text": "(8) 원시 데이터를 ingest하고 처리 파이프라인을 수행한다",
+        "anchor": "8-ingest"
+      },
+      {
+        "level": 3,
+        "text": "(9) 카탈로그 인덱싱 후 고객에게 전달/과금",
+        "anchor": "9"
+      },
+      {
+        "level": 2,
+        "text": "4.3 “긴급 촬영” 계약(변경량 최소화 포함)",
+        "anchor": "4-3-3"
+      },
+      {
+        "level": 3,
+        "text": "API",
+        "anchor": "api"
+      },
+      {
+        "level": 3,
+        "text": "추가 이벤트/필드",
+        "anchor": "document-13"
+      },
+      {
+        "level": 3,
+        "text": "DB 규칙",
+        "anchor": "db"
+      },
+      {
+        "level": 2,
+        "text": "4.4 E2E 테스트 케이스(이 Contract Map에 대응)",
+        "anchor": "4-4-e2e-contract-map"
+      },
+      {
+        "level": 3,
+        "text": "TC-01 정상 촬영",
+        "anchor": "tc-01"
+      },
+      {
+        "level": 3,
+        "text": "TC-02 하드 제약 불가",
+        "anchor": "tc-02"
+      },
+      {
+        "level": 3,
+        "text": "TC-03 다운링크 실패 후 복구",
+        "anchor": "tc-03"
+      },
+      {
+        "level": 3,
+        "text": "TC-04 긴급 삽입",
+        "anchor": "tc-04"
+      },
+      {
+        "level": 2,
+        "text": "4.5 “이 문서로 확정해야 하는” 마지막 6개 계약 포인트",
+        "anchor": "4-5-6"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "satellite-tasking-feasibility-and-probability-review",
+    "title": "1. 타당성 분석 (Feasibility Analysis)",
+    "summary": "위성촬영계획(Satellite Imaging Plan)을 수립할 때 **타당성 분석**과 **확률 분석**은 서로 다른 목적을 가진 핵심 검토 단계입니다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/satellite-tasking-feasibility-and-probability-review",
+    "updated_at": "2026-03-14T08:30:01Z",
+    "word_count": 3658,
+    "reading_minutes": 15,
+    "source_path": "guide/satellite-tasking-feasibility-and-probability-review.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "① 개념",
+        "anchor": "document"
+      },
+      {
+        "level": 2,
+        "text": "② 주요 검토 요소",
+        "anchor": "document-2"
+      },
+      {
+        "level": 3,
+        "text": "(1) 기하학적 타당성 (Geometric Feasibility)",
+        "anchor": "1-geometric-feasibility"
+      },
+      {
+        "level": 3,
+        "text": "(2) 물리적·환경적 타당성",
+        "anchor": "2"
+      },
+      {
+        "level": 3,
+        "text": "(3) 시스템 제약조건",
+        "anchor": "3"
+      },
+      {
+        "level": 3,
+        "text": "(4) 해상도 및 성능 요건 충족 여부",
+        "anchor": "4"
+      },
+      {
+        "level": 2,
+        "text": "③ 결과 형태",
+        "anchor": "document-3"
+      },
+      {
+        "level": 2,
+        "text": "① 개념",
+        "anchor": "document-4"
+      },
+      {
+        "level": 2,
+        "text": "② 왜 필요한가?",
+        "anchor": "document-5"
+      },
+      {
+        "level": 2,
+        "text": "③ 대표적 확률 요소",
+        "anchor": "document-6"
+      },
+      {
+        "level": 3,
+        "text": "(1) 기상 확률",
+        "anchor": "1"
+      },
+      {
+        "level": 3,
+        "text": "(2) 시스템 가용도",
+        "anchor": "2-2"
+      },
+      {
+        "level": 3,
+        "text": "(3) 복수 기회 분석",
+        "anchor": "3-2"
+      },
+      {
+        "level": 3,
+        "text": "(4) 몬테카를로 시뮬레이션",
+        "anchor": "4-2"
+      },
+      {
+        "level": 2,
+        "text": "(1) 기하학적 가시성 조건",
+        "anchor": "1-2"
+      },
+      {
+        "level": 3,
+        "text": "● 접근 가능 조건",
+        "anchor": "document-7"
+      },
+      {
+        "level": 3,
+        "text": "● 관측 가능 시간 계산",
+        "anchor": "document-8"
+      },
+      {
+        "level": 2,
+        "text": "(2) 태양 고도 조건",
+        "anchor": "2-3"
+      },
+      {
+        "level": 2,
+        "text": "(3) 해상도 계산 (GSD)",
+        "anchor": "3-gsd"
+      },
+      {
+        "level": 2,
+        "text": "(4) 구름 확률 모델",
+        "anchor": "4-3"
+      },
+      {
+        "level": 2,
+        "text": "(5) 복수 기회 성공 확률",
+        "anchor": "5"
+      },
+      {
+        "level": 2,
+        "text": "(1) 관측 기하 제약",
+        "anchor": "1-3"
+      },
+      {
+        "level": 2,
+        "text": "(2) 강우 감쇠 확률",
+        "anchor": "2-4"
+      },
+      {
+        "level": 2,
+        "text": "(3) 시스템 가용도 반영",
+        "anchor": "3-3"
+      },
+      {
+        "level": 2,
+        "text": "(4) 최종 성공 확률",
+        "anchor": "4-4"
+      },
+      {
+        "level": 2,
+        "text": "Step 1. 입력 변수 정의",
+        "anchor": "step-1"
+      },
+      {
+        "level": 2,
+        "text": "Step 2. 난수 샘플링",
+        "anchor": "step-2"
+      },
+      {
+        "level": 2,
+        "text": "Step 3. N회 반복",
+        "anchor": "step-3-n"
+      },
+      {
+        "level": 2,
+        "text": "Step 4. 결과 산출",
+        "anchor": "step-4"
+      },
+      {
+        "level": 2,
+        "text": "실무 장점",
+        "anchor": "document-9"
+      },
+      {
+        "level": 3,
+        "text": "타당성 분석 표현 예",
+        "anchor": "document-10"
+      },
+      {
+        "level": 3,
+        "text": "확률 분석 표현 예",
+        "anchor": "document-11"
+      },
+      {
+        "level": 3,
+        "text": "리스크 분석 문구",
+        "anchor": "document-12"
+      },
+      {
+        "level": 2,
+        "text": "1) 요구조건 정리 (Mission Requirement 정형화)",
+        "anchor": "1-mission-requirement"
+      },
+      {
+        "level": 2,
+        "text": "2) 궤도 기반 접근기회(Access) 산출",
+        "anchor": "2-access"
+      },
+      {
+        "level": 2,
+        "text": "3) 타당성(Feasibility) 필터링: “가능/불가능” 판정",
+        "anchor": "3-feasibility"
+      },
+      {
+        "level": 3,
+        "text": "3-1) 기하 제약(공통)",
+        "anchor": "3-1"
+      },
+      {
+        "level": 3,
+        "text": "3-2) 품질 제약(공통)",
+        "anchor": "3-2"
+      },
+      {
+        "level": 3,
+        "text": "3-3) 광학 추가 제약",
+        "anchor": "3-3"
+      },
+      {
+        "level": 3,
+        "text": "3-4) SAR 추가 제약",
+        "anchor": "3-4-sar"
+      },
+      {
+        "level": 3,
+        "text": "3-5) 운용/자원 제약(공통)",
+        "anchor": "3-5"
+      },
+      {
+        "level": 2,
+        "text": "4) 확률(Probability) 모델링: “될 가능성(%)” 계산",
+        "anchor": "4-probability"
+      },
+      {
+        "level": 3,
+        "text": "4-1) 환경 확률 (P_{env})",
+        "anchor": "4-1-p-env"
+      },
+      {
+        "level": 3,
+        "text": "4-2) 시스템 가용도 (P_{system})",
+        "anchor": "4-2-p-system"
+      },
+      {
+        "level": 3,
+        "text": "4-3) 운용 리스크 (P_{ops})",
+        "anchor": "4-3-p-ops"
+      },
+      {
+        "level": 2,
+        "text": "5) 복수 기회(재시도) 성공확률 계산",
+        "anchor": "5-2"
+      },
+      {
+        "level": 2,
+        "text": "6) 스케줄 최적화 + 리스크 대응(계획 확정)",
+        "anchor": "6"
+      },
+      {
+        "level": 3,
+        "text": "6-1) 최적화 목적함수(예시)",
+        "anchor": "6-1"
+      },
+      {
+        "level": 3,
+        "text": "6-2) 리스크 대응",
+        "anchor": "6-2"
+      },
+      {
+        "level": 2,
+        "text": "예제 상황(가정)",
+        "anchor": "document-13"
+      },
+      {
+        "level": 2,
+        "text": "(추가) “성공확률 95%”를 만들려면 기회가 몇 번 필요?",
+        "anchor": "95"
+      },
+      {
+        "level": 2,
+        "text": "6-1) window별 맑음확률이 다르다고 해보자(예시)",
+        "anchor": "6-1-window"
+      },
+      {
+        "level": 2,
+        "text": "6-2) “3번만 촬영 가능”이면 어떤 3개를 고를까?",
+        "anchor": "6-2-3-3"
+      },
+      {
+        "level": 2,
+        "text": "이 예제에서 “확률을 올리는” 실무 레버(선택지)",
+        "anchor": "document-14"
+      },
+      {
+        "level": 2,
+        "text": "1) 요구조건 정리(가정)",
+        "anchor": "1-4"
+      },
+      {
+        "level": 2,
+        "text": "2) 접근기회(Access) 산출(가정)",
+        "anchor": "2-access-2"
+      },
+      {
+        "level": 2,
+        "text": "3) 타당성 분석(Feasibility) — “할 수 있나?”",
+        "anchor": "3-feasibility-2"
+      },
+      {
+        "level": 3,
+        "text": "3-1) 기하(Geometry)",
+        "anchor": "3-1-geometry"
+      },
+      {
+        "level": 3,
+        "text": "3-2) 품질(Quality)",
+        "anchor": "3-2-quality"
+      },
+      {
+        "level": 3,
+        "text": "3-3) 조명(광학 필수)",
+        "anchor": "3-3-2"
+      },
+      {
+        "level": 3,
+        "text": "3-4) 자원/운용",
+        "anchor": "3-4"
+      },
+      {
+        "level": 2,
+        "text": "4) 확률 분석(Probability) — “성공할 확률은?”",
+        "anchor": "4-probability-2"
+      },
+      {
+        "level": 3,
+        "text": "(1) 3월(서울) 한 번 성공확률",
+        "anchor": "1-3"
+      },
+      {
+        "level": 3,
+        "text": "(2) 7월(장마철 쪽) 한 번 성공확률",
+        "anchor": "2-7"
+      },
+      {
+        "level": 3,
+        "text": "(3) 10월(맑은 계절) 한 번 성공확률",
+        "anchor": "3-10"
+      },
+      {
+        "level": 2,
+        "text": "5) 복수 기회(n=6)에서 “최소 1회 성공” 확률",
+        "anchor": "5-n-6-1"
+      },
+      {
+        "level": 2,
+        "text": "6) 스케줄 최적화 + 리스크 대응(계획 확정)",
+        "anchor": "6-2"
+      },
+      {
+        "level": 3,
+        "text": "6-1) 최적화 원칙(광학)",
+        "anchor": "6-1-2"
+      },
+      {
+        "level": 3,
+        "text": "6-2) 리스크 대응(서울시청 같은 도심 타겟)",
+        "anchor": "6-2-2"
+      },
+      {
+        "level": 2,
+        "text": "서울 날씨:",
+        "anchor": "document-15"
+      },
+      {
+        "level": 2,
+        "text": "1) 요구조건 정리(표준 가정)",
+        "anchor": "1-5"
+      },
+      {
+        "level": 2,
+        "text": "2) 접근기회(Access) 산출(표준 가정)",
+        "anchor": "2-access-3"
+      },
+      {
+        "level": 2,
+        "text": "3) 타당성 분석(Feasibility) 필터링",
+        "anchor": "3-feasibility-3"
+      },
+      {
+        "level": 2,
+        "text": "4) 확률 분석(1회 성공확률 p 산정)",
+        "anchor": "4-1-p"
+      },
+      {
+        "level": 2,
+        "text": "5) 복수 기회(10회)에서 “최소 1회 성공” 확률",
+        "anchor": "5-10-1"
+      },
+      {
+        "level": 2,
+        "text": "6) 스케줄 최적화 + 리스크 대응(계획 확정)",
+        "anchor": "6-3"
+      },
+      {
+        "level": 3,
+        "text": "6-1) “몇 번만 찍을 수 있다” 제약이 생기면",
+        "anchor": "6-1-3"
+      },
+      {
+        "level": 3,
+        "text": "6-2) 서울 도심(시청) 타깃의 추가 리스크(실무 포인트)",
+        "anchor": "6-2-3"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "satellite-tasking-ui-benchmark-and-layouts",
+    "title": "viper 위성 촬영계획(Tasking) UI 사례분석 및 화면구성안 도출",
+    "summary": "- 문서명: viper 위성 촬영계획(Tasking) UI 사례분석 및 화면구성안 도출",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/satellite-tasking-ui-benchmark-and-layouts",
+    "updated_at": "2026-03-07T02:17:14Z",
+    "word_count": 633,
+    "reading_minutes": 3,
+    "source_path": "guide/satellite-tasking-ui-benchmark-and-layouts.md",
+    "is_public": true,
+    "headings": [],
+    "order": 0
+  },
+  {
+    "slug": "satellite-tasking-ui-reference-gallery",
+    "title": "viper 위성 촬영계획(Tasking) 타사 참고 UI 이미지 갤러리",
+    "summary": "- 문서명: viper 위성 촬영계획(Tasking) 타사 참고 UI 이미지 갤러리",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/satellite-tasking-ui-reference-gallery",
+    "updated_at": "2026-03-07T01:36:02Z",
+    "word_count": 403,
+    "reading_minutes": 2,
+    "source_path": "guide/satellite-tasking-ui-reference-gallery.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1. 촬영요청 생성/입력(Task Creation)",
+        "anchor": "1-task-creation"
+      },
+      {
+        "level": 3,
+        "text": "1.1 Planet - Create Tasking Orders",
+        "anchor": "1-1-planet-create-tasking-orders"
+      },
+      {
+        "level": 3,
+        "text": "1.2 ICEYE - Create Task",
+        "anchor": "1-2-iceye-create-task"
+      },
+      {
+        "level": 2,
+        "text": "2. 주문/작전 모니터링(Order Management / Monitoring)",
+        "anchor": "2-order-management-monitoring"
+      },
+      {
+        "level": 3,
+        "text": "2.1 Planet - Manage Tasking Orders",
+        "anchor": "2-1-planet-manage-tasking-orders"
+      },
+      {
+        "level": 2,
+        "text": "3. 타당성/요청정의/파라미터 참고(Feasibility / Parameter)",
+        "anchor": "3-feasibility-parameter"
+      },
+      {
+        "level": 3,
+        "text": "3.1 Maxar - Tasking Requests",
+        "anchor": "3-1-maxar-tasking-requests"
+      },
+      {
+        "level": 3,
+        "text": "3.2 Airbus OneAtlas - Tasking Guide",
+        "anchor": "3-2-airbus-oneatlas-tasking-guide"
+      },
+      {
+        "level": 3,
+        "text": "3.3 Capella - Tasking Parameters",
+        "anchor": "3-3-capella-tasking-parameters"
+      },
+      {
+        "level": 2,
+        "text": "4. 활용 메모(viper 매핑)",
+        "anchor": "4-viper"
+      },
+      {
+        "level": 2,
+        "text": "5. 주의사항",
+        "anchor": "5"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "sattie-tasking-screen-specification",
+    "title": "viper 위성 촬영계획(Tasking) 화면 정의서",
+    "summary": "- 문서명: viper 위성 촬영계획(Tasking) 화면 정의서",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/sattie-tasking-screen-specification",
+    "updated_at": "2026-03-07T01:36:07Z",
+    "word_count": 1846,
+    "reading_minutes": 8,
+    "source_path": "guide/sattie-tasking-screen-specification.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1. 범위 및 분류 기준",
+        "anchor": "1"
+      },
+      {
+        "level": 2,
+        "text": "2. 사용자 유형 정의",
+        "anchor": "2"
+      },
+      {
+        "level": 2,
+        "text": "3. 화면 분류 요약",
+        "anchor": "3"
+      },
+      {
+        "level": 2,
+        "text": "4. 사용자별 필수 화면 매트릭스",
+        "anchor": "4"
+      },
+      {
+        "level": 2,
+        "text": "5. 공통 UI/데이터 원칙",
+        "anchor": "5-ui"
+      },
+      {
+        "level": 2,
+        "text": "6. 화면별 상세 정의",
+        "anchor": "6"
+      },
+      {
+        "level": 3,
+        "text": "6.1 SCR-001 대시보드 (필수)",
+        "anchor": "6-1-scr-001"
+      },
+      {
+        "level": 3,
+        "text": "6.2 SCR-002 촬영요청 생성(위저드) (필수)",
+        "anchor": "6-2-scr-002"
+      },
+      {
+        "level": 3,
+        "text": "6.3 SCR-003 타당성·성공확률 (필수)",
+        "anchor": "6-3-scr-003"
+      },
+      {
+        "level": 3,
+        "text": "6.4 SCR-004 견적·승인 (필수)",
+        "anchor": "6-4-scr-004"
+      },
+      {
+        "level": 3,
+        "text": "6.5 SCR-005 주문/작전 모니터링 (필수)",
+        "anchor": "6-5-scr-005"
+      },
+      {
+        "level": 3,
+        "text": "6.6 SCR-006 요청 상세·캡처 검수 (필수)",
+        "anchor": "6-6-scr-006"
+      },
+      {
+        "level": 3,
+        "text": "6.7 SCR-009 작전지시(위성 Uplink) (필수, 내부운영 전용)",
+        "anchor": "6-7-scr-009-uplink"
+      },
+      {
+        "level": 3,
+        "text": "6.8 SCR-010 수신·처리·QA 모니터링 (필수, 내부운영 전용)",
+        "anchor": "6-8-scr-010-qa"
+      },
+      {
+        "level": 3,
+        "text": "6.9 SCR-007 템플릿·재사용 (권장)",
+        "anchor": "6-9-scr-007"
+      },
+      {
+        "level": 3,
+        "text": "6.10 SCR-008 관리자 설정 (권장)",
+        "anchor": "6-10-scr-008"
+      },
+      {
+        "level": 2,
+        "text": "7. 필수 검증 로직 정의",
+        "anchor": "7"
+      },
+      {
+        "level": 2,
+        "text": "8. 권한(RBAC) 초안",
+        "anchor": "8-rbac"
+      },
+      {
+        "level": 2,
+        "text": "9. 비기능 요구사항(초안)",
+        "anchor": "9"
+      },
+      {
+        "level": 2,
+        "text": "10. 4 Actor / 10 Screen End-to-End Use Case",
+        "anchor": "10-4-actor-10-screen-end-to-end-use-case"
+      },
+      {
+        "level": 3,
+        "text": "10.1 Actor별 담당 흐름",
+        "anchor": "10-1-actor"
+      },
+      {
+        "level": 3,
+        "text": "10.2 Actor별 설명식 사용 흐름 (`->`)",
+        "anchor": "10-2-actor"
+      },
+      {
+        "level": 3,
+        "text": "10.3 메인 정상 시나리오",
+        "anchor": "10-3"
+      },
+      {
+        "level": 3,
+        "text": "10.4 주요 비정상 분기",
+        "anchor": "10-4"
+      },
+      {
+        "level": 2,
+        "text": "11. 산출물 및 다음 단계",
+        "anchor": "11"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "sattie-tasking-user-menu-ia",
+    "title": "viper 위성 촬영계획(Tasking) 사용자별 메뉴 IA 정의서",
+    "summary": "- 문서명: viper 위성 촬영계획(Tasking) 사용자별 메뉴 IA 정의서",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/sattie-tasking-user-menu-ia",
+    "updated_at": "2026-03-07T01:35:57Z",
+    "word_count": 1307,
+    "reading_minutes": 6,
+    "source_path": "guide/sattie-tasking-user-menu-ia.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1. 목적",
+        "anchor": "1"
+      },
+      {
+        "level": 2,
+        "text": "2. 사용자 영역 분리 원칙",
+        "anchor": "2"
+      },
+      {
+        "level": 2,
+        "text": "3. 메뉴 트리",
+        "anchor": "3"
+      },
+      {
+        "level": 2,
+        "text": "3.1 외부 포털(Portal)",
+        "anchor": "3-1-portal"
+      },
+      {
+        "level": 2,
+        "text": "3.2 내부 운영콘솔(Ops Console)",
+        "anchor": "3-2-ops-console"
+      },
+      {
+        "level": 2,
+        "text": "4. 사용자별 메뉴 접근 매트릭스",
+        "anchor": "4"
+      },
+      {
+        "level": 2,
+        "text": "5. 내비게이션 규칙",
+        "anchor": "5"
+      },
+      {
+        "level": 2,
+        "text": "6. URL/라우팅 권장안",
+        "anchor": "6-url"
+      },
+      {
+        "level": 2,
+        "text": "7. 운영/보안 정책",
+        "anchor": "7"
+      },
+      {
+        "level": 2,
+        "text": "8. 다음 단계",
+        "anchor": "8"
+      },
+      {
+        "level": 2,
+        "text": "9. 메뉴 와이어 텍스트(1depth/2depth)",
+        "anchor": "9-1depth-2depth"
+      },
+      {
+        "level": 3,
+        "text": "9.1 외부요청자 Portal",
+        "anchor": "9-1-portal"
+      },
+      {
+        "level": 3,
+        "text": "9.2 내부운영자 Ops Console",
+        "anchor": "9-2-ops-console"
+      },
+      {
+        "level": 3,
+        "text": "9.3 승인자 Approver 전용 메뉴 뷰",
+        "anchor": "9-3-approver"
+      },
+      {
+        "level": 3,
+        "text": "9.4 시스템관리자 Admin 전용 메뉴 뷰",
+        "anchor": "9-4-admin"
+      },
+      {
+        "level": 3,
+        "text": "9.5 노출 제어 규칙",
+        "anchor": "9-5"
+      },
+      {
+        "level": 2,
+        "text": "10. 라우트 권한 매핑표(프론트/API)",
+        "anchor": "10-api"
+      },
+      {
+        "level": 2,
+        "text": "10.1 공통 권한 가드 규칙",
+        "anchor": "10-1"
+      },
+      {
+        "level": 2,
+        "text": "10.2 라우트별 권한 매핑",
+        "anchor": "10-2"
+      },
+      {
+        "level": 2,
+        "text": "10.3 API 권한 스코프 제안",
+        "anchor": "10-3-api"
+      },
+      {
+        "level": 2,
+        "text": "10.5 구현 기준 쿼리 시뮬레이션",
+        "anchor": "10-5"
+      },
+      {
+        "level": 2,
+        "text": "10.4 구현 체크리스트",
+        "anchor": "10-4"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "sattie-api-client-guide",
+    "title": "SATTIE 외부 클라이언트 개발가이드",
+    "summary": "- 서비스명: SATTIE (Virtual Satellite Imagery Service)",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/sattie-api-client-guide",
+    "updated_at": "2026-03-07T00:26:41Z",
+    "word_count": 759,
+    "reading_minutes": 4,
+    "source_path": "guide/개발가이드/sattie-api-client-guide.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1. 개요",
+        "anchor": "1"
+      },
+      {
+        "level": 2,
+        "text": "2. 핵심 개념",
+        "anchor": "2"
+      },
+      {
+        "level": 2,
+        "text": "3. API 패턴 요약",
+        "anchor": "3-api"
+      },
+      {
+        "level": 2,
+        "text": "4. 빠른 시작",
+        "anchor": "4"
+      },
+      {
+        "level": 3,
+        "text": "4.1 상태 확인",
+        "anchor": "4-1"
+      },
+      {
+        "level": 3,
+        "text": "4.2 랜덤 단건 생성 다운로드",
+        "anchor": "4-2"
+      },
+      {
+        "level": 3,
+        "text": "4.3 OSM 단건 생성 다운로드 (`/images/generate`와 동일 패턴)",
+        "anchor": "4-3-osm-images-generate"
+      },
+      {
+        "level": 3,
+        "text": "4.4 OSM 일괄 생성 후 항목별 다운로드",
+        "anchor": "4-4-osm"
+      },
+      {
+        "level": 2,
+        "text": "5. 엔드포인트 상세",
+        "anchor": "5"
+      },
+      {
+        "level": 3,
+        "text": "5.1 `POST /images/generate`",
+        "anchor": "5-1-post-images-generate"
+      },
+      {
+        "level": 3,
+        "text": "5.2 `POST /osm/images/generate`",
+        "anchor": "5-2-post-osm-images-generate"
+      },
+      {
+        "level": 3,
+        "text": "5.3 `POST /osm/images/generate-all`",
+        "anchor": "5-3-post-osm-images-generate-all"
+      },
+      {
+        "level": 3,
+        "text": "5.4 `GET /images` (랜덤 카탈로그 목록)",
+        "anchor": "5-4-get-images"
+      },
+      {
+        "level": 3,
+        "text": "5.5 `GET /osm/images/items` (OSM 전체 아이템 평탄 목록)",
+        "anchor": "5-5-get-osm-images-items-osm"
+      },
+      {
+        "level": 2,
+        "text": "6. 응답 필드 가이드",
+        "anchor": "6"
+      },
+      {
+        "level": 2,
+        "text": "7. 권장 연동 패턴",
+        "anchor": "7"
+      },
+      {
+        "level": 3,
+        "text": "패턴 A: 파일 즉시 수신(권장)",
+        "anchor": "a"
+      },
+      {
+        "level": 3,
+        "text": "패턴 B: OSM 일괄 생성 후 링크 기반 수신",
+        "anchor": "b-osm"
+      },
+      {
+        "level": 2,
+        "text": "8. 오류 처리 가이드",
+        "anchor": "8"
+      },
+      {
+        "level": 2,
+        "text": "9. 클라이언트 구현 체크리스트",
+        "anchor": "9"
+      },
+      {
+        "level": 2,
+        "text": "10. 참고 API",
+        "anchor": "10-api"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "sattie-maintainer-guide",
+    "title": "SATTIE 유지보수 개발자 가이드",
+    "summary": "- 현재 코드 구조를 빠르게 이해하고 안전하게 변경하기 위한 내부 운영/개발 기준 문서입니다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/sattie-maintainer-guide",
+    "updated_at": "2026-03-07T00:26:41Z",
+    "word_count": 722,
+    "reading_minutes": 3,
+    "source_path": "guide/개발가이드/sattie-maintainer-guide.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1. 문서 목적",
+        "anchor": "1"
+      },
+      {
+        "level": 2,
+        "text": "2. 기술 스택/실행",
+        "anchor": "2"
+      },
+      {
+        "level": 2,
+        "text": "3. 디렉터리 구조",
+        "anchor": "3"
+      },
+      {
+        "level": 2,
+        "text": "4. 생성기 설계(핵심)",
+        "anchor": "4"
+      },
+      {
+        "level": 3,
+        "text": "4.1 랜덤 생성기",
+        "anchor": "4-1"
+      },
+      {
+        "level": 3,
+        "text": "4.2 OSM 생성기",
+        "anchor": "4-2-osm"
+      },
+      {
+        "level": 2,
+        "text": "5. 레벨/포맷 규칙",
+        "anchor": "5"
+      },
+      {
+        "level": 2,
+        "text": "6. UI-API 연계 포인트",
+        "anchor": "6-ui-api"
+      },
+      {
+        "level": 2,
+        "text": "7. 저장소/데이터 모델",
+        "anchor": "7"
+      },
+      {
+        "level": 3,
+        "text": "7.1 랜덤 저장소",
+        "anchor": "7-1"
+      },
+      {
+        "level": 3,
+        "text": "7.2 OSM 저장소",
+        "anchor": "7-2-osm"
+      },
+      {
+        "level": 2,
+        "text": "8. 운영 명령/검증 절차",
+        "anchor": "8"
+      },
+      {
+        "level": 3,
+        "text": "8.1 기본 검증",
+        "anchor": "8-1"
+      },
+      {
+        "level": 3,
+        "text": "8.2 서버 상태 확인",
+        "anchor": "8-2"
+      },
+      {
+        "level": 3,
+        "text": "8.3 문서 반영 확인",
+        "anchor": "8-3"
+      },
+      {
+        "level": 2,
+        "text": "9. 트러블슈팅",
+        "anchor": "9"
+      },
+      {
+        "level": 3,
+        "text": "9.1 FastAPI `Invalid args for response field`",
+        "anchor": "9-1-fastapi-invalid-args-for-response-field"
+      },
+      {
+        "level": 3,
+        "text": "9.2 OSM 생성 실패(502)",
+        "anchor": "9-2-osm-502"
+      },
+      {
+        "level": 3,
+        "text": "9.3 TIFF 미리보기 깨짐",
+        "anchor": "9-3-tiff"
+      },
+      {
+        "level": 3,
+        "text": "9.4 Swagger 문구가 즉시 안 바뀜",
+        "anchor": "9-4-swagger"
+      },
+      {
+        "level": 2,
+        "text": "10. 변경 가이드",
+        "anchor": "10"
+      },
+      {
+        "level": 3,
+        "text": "10.1 새 포맷 추가",
+        "anchor": "10-1"
+      },
+      {
+        "level": 3,
+        "text": "10.2 새 레벨 추가",
+        "anchor": "10-2"
+      },
+      {
+        "level": 3,
+        "text": "10.3 Provider(예: Google) 추가 검토",
+        "anchor": "10-3-provider-google"
+      },
+      {
+        "level": 2,
+        "text": "11. 권장 품질 체크리스트",
+        "anchor": "11"
+      },
+      {
+        "level": 2,
+        "text": "12. 현재 주의사항",
+        "anchor": "12"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "sattie-system-design",
+    "title": "SATTIE 시스템 설계 문서",
+    "summary": "- 외부 연동, 내부 유지보수, 기능 확장 시 기준이 되는 단일 기술 산출물을 제공한다.",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/sattie-system-design",
+    "updated_at": "2026-03-07T00:26:41Z",
+    "word_count": 1159,
+    "reading_minutes": 5,
+    "source_path": "guide/개발가이드/sattie-system-design.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "1. 문서 목적",
+        "anchor": "1"
+      },
+      {
+        "level": 2,
+        "text": "2. 시스템 목표와 범위",
+        "anchor": "2"
+      },
+      {
+        "level": 2,
+        "text": "3. 아키텍처 개요",
+        "anchor": "3"
+      },
+      {
+        "level": 3,
+        "text": "3.1 계층 구조",
+        "anchor": "3-1"
+      },
+      {
+        "level": 3,
+        "text": "3.2 런타임 상태",
+        "anchor": "3-2"
+      },
+      {
+        "level": 2,
+        "text": "4. 데이터 모델",
+        "anchor": "4"
+      },
+      {
+        "level": 3,
+        "text": "4.1 핵심 엔티티: `ImageItem` (`app/core.py`)",
+        "anchor": "4-1-imageitem-app-core-py"
+      },
+      {
+        "level": 3,
+        "text": "4.2 포맷/레벨 규칙",
+        "anchor": "4-2"
+      },
+      {
+        "level": 2,
+        "text": "5. 저장소 설계",
+        "anchor": "5"
+      },
+      {
+        "level": 3,
+        "text": "5.1 경로",
+        "anchor": "5-1"
+      },
+      {
+        "level": 3,
+        "text": "5.2 랜덤 저장소 정책",
+        "anchor": "5-2"
+      },
+      {
+        "level": 3,
+        "text": "5.3 OSM 저장소 정책",
+        "anchor": "5-3-osm"
+      },
+      {
+        "level": 2,
+        "text": "6. API 설계",
+        "anchor": "6-api"
+      },
+      {
+        "level": 3,
+        "text": "6.1 서비스/공통",
+        "anchor": "6-1"
+      },
+      {
+        "level": 3,
+        "text": "6.2 랜덤 샘플 API",
+        "anchor": "6-2-api"
+      },
+      {
+        "level": 3,
+        "text": "6.3 OSM 샘플 API",
+        "anchor": "6-3-osm-api"
+      },
+      {
+        "level": 3,
+        "text": "6.4 관리 API",
+        "anchor": "6-4-api"
+      },
+      {
+        "level": 2,
+        "text": "7. 핵심 처리 시퀀스",
+        "anchor": "7"
+      },
+      {
+        "level": 3,
+        "text": "7.1 랜덤 단건 생성 (`/images/generate`)",
+        "anchor": "7-1-images-generate"
+      },
+      {
+        "level": 3,
+        "text": "7.2 OSM 단건 생성 (`/osm/images/generate`)",
+        "anchor": "7-2-osm-osm-images-generate"
+      },
+      {
+        "level": 3,
+        "text": "7.3 OSM 일괄 생성 (`/osm/images/generate-all`)",
+        "anchor": "7-3-osm-osm-images-generate-all"
+      },
+      {
+        "level": 2,
+        "text": "8. 이미지 생성/변환 설계",
+        "anchor": "8"
+      },
+      {
+        "level": 3,
+        "text": "8.1 TIFF 작성",
+        "anchor": "8-1-tiff"
+      },
+      {
+        "level": 3,
+        "text": "8.2 미리보기 변환",
+        "anchor": "8-2"
+      },
+      {
+        "level": 3,
+        "text": "8.3 SAR 흑백 모사",
+        "anchor": "8-3-sar"
+      },
+      {
+        "level": 2,
+        "text": "9. UI 설계 요약",
+        "anchor": "9-ui"
+      },
+      {
+        "level": 2,
+        "text": "10. 오류/예외 설계",
+        "anchor": "10"
+      },
+      {
+        "level": 2,
+        "text": "11. 운영/배포 관점",
+        "anchor": "11"
+      },
+      {
+        "level": 2,
+        "text": "12. 확장 설계 가이드",
+        "anchor": "12"
+      },
+      {
+        "level": 3,
+        "text": "12.1 새 포맷/레벨 추가",
+        "anchor": "12-1"
+      },
+      {
+        "level": 3,
+        "text": "12.2 새 Provider 추가(예: Google)",
+        "anchor": "12-2-provider-google"
+      },
+      {
+        "level": 2,
+        "text": "13. 현재 설계상 주의 포인트",
+        "anchor": "13"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "document",
+    "title": "문서 A/B 종합 기반 To-Be 위성영상 통합 시스템 모델 설계 보고서",
+    "summary": "본 보고서는 **문서 A(구성도 중심: AS-IS/To-Be 통합 구성 및 모듈/화면 예시 포함)**, **문서 B(데이터센터 적용 가능성/구축 관점 분석: 프로토콜 전환·자원·업무방식 비교 포함)**를 참조하여, 두 문서의 내용을 **통합(To-Be)** 관점에서 재구성하고 **하나의 To-Be 시스템 모델**을 설계한 결과물이다. (현재 시점: **2026-03-05 KST**)",
+    "category": "guide",
+    "tags": [],
+    "public_url": "/p/document",
+    "updated_at": "2026-03-13T16:22:53Z",
+    "word_count": 4375,
+    "reading_minutes": 18,
+    "source_path": "guide/개발가이드/통합설계.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "Executive Summary",
+        "anchor": "executive-summary"
+      },
+      {
+        "level": 2,
+        "text": "문서 입력과 요구사항 추출 템플릿",
+        "anchor": "document"
+      },
+      {
+        "level": 3,
+        "text": "문서 유형 정리",
+        "anchor": "document-2"
+      },
+      {
+        "level": 3,
+        "text": "통합 설계용 요구사항 추출 템플릿",
+        "anchor": "document-3"
+      },
+      {
+        "level": 3,
+        "text": "문서 A/B 통합 요약",
+        "anchor": "a-b"
+      },
+      {
+        "level": 2,
+        "text": "두 문서 통합 분석과 상충사항 해결안",
+        "anchor": "document-4"
+      },
+      {
+        "level": 3,
+        "text": "공통점·차이점·상충사항 정리 표",
+        "anchor": "document-5"
+      },
+      {
+        "level": 3,
+        "text": "통합 설계 원칙",
+        "anchor": "document-6"
+      },
+      {
+        "level": 2,
+        "text": "통합 To-Be 시스템 설계",
+        "anchor": "to-be"
+      },
+      {
+        "level": 3,
+        "text": "원문 문서의 핵심 구조 시각자료",
+        "anchor": "document-7"
+      },
+      {
+        "level": 3,
+        "text": "통합 To-Be 컴포넌트 아키텍처",
+        "anchor": "to-be-2"
+      },
+      {
+        "level": 3,
+        "text": "데이터 흐름도 DFD",
+        "anchor": "dfd"
+      },
+      {
+        "level": 3,
+        "text": "주요 인터페이스 명세 초안",
+        "anchor": "document-8"
+      },
+      {
+        "level": 3,
+        "text": "데이터 모델 ERD 초안",
+        "anchor": "erd"
+      },
+      {
+        "level": 2,
+        "text": "비기능 요구사항",
+        "anchor": "document-9"
+      },
+      {
+        "level": 3,
+        "text": "비기능 요구사항 표",
+        "anchor": "document-10"
+      },
+      {
+        "level": 2,
+        "text": "이행 계획",
+        "anchor": "document-11"
+      },
+      {
+        "level": 3,
+        "text": "단계별 마일스톤 및 타임라인",
+        "anchor": "document-12"
+      },
+      {
+        "level": 3,
+        "text": "주요 리스크와 대응(우선순위 포함)",
+        "anchor": "document-13"
+      },
+      {
+        "level": 3,
+        "text": "검증·테스트 전략",
+        "anchor": "document-14"
+      },
+      {
+        "level": 3,
+        "text": "전환(마이그레이션) 전략",
+        "anchor": "document-15"
+      },
+      {
+        "level": 2,
+        "text": "산출물과 책임·검토 기준",
+        "anchor": "document-16"
+      },
+      {
+        "level": 3,
+        "text": "산출물 목록 표",
+        "anchor": "document-17"
+      },
+      {
+        "level": 3,
+        "text": "실제 문서 제공 시 재작성 조건 명시",
+        "anchor": "document-18"
+      },
+      {
+        "level": 2,
+        "text": "참고 표준·프레임워크",
+        "anchor": "document-19"
+      }
+    ],
+    "order": 0
+  },
+  {
+    "slug": "east-up",
+    "title": "지도를 90도 돌려보면 무엇이 보일까요? 주한미군 사령관이 제안한 'East-Up' 지도",
+    "summary": "최근 유엔사·연합사·주한미군 사령관인 **재비어 브런슨(Gen. Xavier T. Brunson)** 장군이 기고한 칼럼이 화제가 되고 있는데요. 바로 **\"지도를 동쪽이 위로 가게(East-Up) 돌려보라\"**는 제안입니다.",
+    "category": "uploads",
+    "tags": [],
+    "public_url": "/p/east-up",
+    "updated_at": "2026-03-14T08:41:11Z",
+    "word_count": 349,
+    "reading_minutes": 2,
+    "source_path": "uploads/docs/주한미군 사령관 East-Up지도.md",
+    "is_public": true,
+    "headings": [
+      {
+        "level": 2,
+        "text": "익숙함이 만든 사각지대 (The Blind Spots)",
+        "anchor": "the-blind-spots"
+      },
+      {
+        "level": 2,
+        "text": "'East-Up' 지도가 보여주는 새로운 세상",
+        "anchor": "east-up"
+      },
+      {
+        "level": 3,
+        "text": "1. 전략적 삼각형의 발견 (The Strategic Triangle)",
+        "anchor": "1-the-strategic-triangle"
+      },
+      {
+        "level": 3,
+        "text": "2. 숨겨진 기하학 (Hidden Geometry)",
+        "anchor": "2-hidden-geometry"
+      },
+      {
+        "level": 2,
+        "text": "결론: 관점의 전환이 가져오는 힘",
+        "anchor": "document"
+      }
+    ],
+    "order": 0
+  }
+]
